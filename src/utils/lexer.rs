@@ -129,7 +129,7 @@ impl Lexer {
             }
             match c {
                 '\0' => {tokens.push(TokenKind::EOF); break;},
-                ' ' => {print!("s"); continue},
+                ' ' => {continue},
                 '=' => tokens.push(TokenKind::Equal),
                 '+' => tokens.push(TokenKind::Operator { raw: '+', kind: OperatorKind::Adder }),
                 '*' => tokens.push(TokenKind::Operator { raw: '*', kind: OperatorKind::Multiplier }),
