@@ -15,7 +15,14 @@ fn main() {
         println!("Usage: {} \"file.fi\"", args[0]);
         return;
     }
+
     let filename = &args[1];
+    if !Path::new(filename).exists() {
+        println!("File \"{}\" does not exist", filename);
+        println!("Usage: {} \"file.fi\"", args[0]);
+        return;
+    }
+    
     if let Ok(lines) = read_lines(filename) {
         // Consumes the iterator, returns an (Optional) String
         for line in lines {
