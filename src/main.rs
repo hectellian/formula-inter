@@ -29,6 +29,7 @@ fn main() {
             if let Ok(ip) = line {
                 println!("{}", ip);
                 interpret(ip);
+                println!("");
             }
         }
     }
@@ -43,10 +44,10 @@ where P: AsRef<Path>, {
 fn interpret(algebric: String) -> EvalResult {
     let l = Lexer::from(algebric);
     let t = l.tokenize().ok().unwrap();
-    println!("algebric expression: {:?}\n", t);
+    println!("algebric expression: {:?}", t);
 
     let p = postfixe(t);
-    println!("postfixe expression: {:?}\n", p);
+    println!("postfixe expression: {:?}", p);
 
     let e = eval(p);
     println!("evalued expression result: {:?}", e);
