@@ -2,71 +2,22 @@
 
 #![allow(dead_code,unused_variables)]
 
-pub type Token = TokenKind;
+use crate::utils::tokens::*;
 
 #[derive(Debug)]
-pub enum TokenKind {
-    /** End of token stream */
-    EOF,
+pub enum LexerError {
+    /** Unexpected end of file */
+    UnexpectedEndOfFile,
 
-    /** Operators type such as + or * */
-    Operator{raw: char, kind: OperatorKind},
+    /** Unexpected number format */
+    UnexpectedNumberFormat,
 
-    /** The equal operator, reserved for asignation */
-    Equal,
-
-    /** Integers */
-    Integer(String),
-
-    /** Variables identifiers */
-    Identifier(String),
-
-    /** Real numbers */
-    Real(String),
-
-    /** Char chains: String */
-    String(String),
-
-    /** ( delimiting the opening of a parenthesis group */
-    OpenParenthesis,
-
-    /** ) delimiting the end of a parenthesis group */
-    CloseParenthesis,
-
-    /** ´ delimeting the opening of a String */
-    OpenApostrophe,
-
-    /** ` delimiting the end of a String */
-    CloseApostrophe,
-
-    /** New line token, a natural separator between inputs */
-    NewLine,
-
-    /** Unknown token in place of error */
-    UnknownToken(String)
+    /** Unknown Token read */
+    UnknownToken,
 }
-
-#[derive(Debug,Clone, Copy)]
-pub enum OperatorKind {
-    /** The multiplication Operator */
-    Multiplier,
-
-    /** The addition Operator */
-    Adder,
-
-    /** The division operator */
-    Diviser,
-
-    /** The power operator*/
-    Power,
-
-    /** The substraction operator */
-    Substracter
-}
-
 
 /** The lexer object used to tokenize a given input */
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Lexer {
     /** The entry text */
     pub input: String,
@@ -78,154 +29,99 @@ pub struct Lexer {
     pub cur_col: usize,
 
     /** The cursor position from the start of input */
-    pub codepoint_offset: usize
-}
+    pub codepoint_offset: usize,
 
+    /** The current token */
+    pub curr: Option<Token>,
 
-#[derive(Debug)]
-pub enum LexerError {
-    /** Unexpected end of file */
-    UnexpectedEndOfFile,
-
-    /** Unexpected number format */
-    UnexpectedNumberFormat,
 }
 
 impl Lexer {
-
-    pub fn new() -> Lexer {
-        Lexer {
-            cur_col:0,
-            cur_line:0,
-            codepoint_offset:0,
-            input:String::new()
-        }
-    }
 
     pub fn from(input: String) -> Lexer {
         Lexer {
             cur_line:0,
             cur_col:0,
             codepoint_offset:0,
+            curr: None,
             input:input
         }
     }
 
-    pub fn tokenize(&self) -> Result<Vec<Token>,LexerError> {
+}
 
-        let mut tokens = Vec::new();
-
-        let mut char_ite = self.input.chars();
-
-        let mut r = char::REPLACEMENT_CHARACTER;
-
-        loop {
-            let c:char;
-            if r==char::REPLACEMENT_CHARACTER {
-                c = char_ite.next().unwrap_or_else(|| '\0');
-            } else {
-                c=r;
-                r=char::REPLACEMENT_CHARACTER;
+fn test_multi_char_construct(multi_char:String) -> Option<Token> {
+    
+    if multi_char.is_empty() {
+        return None;
+    }else if multi_char.eq("afficher"){
+        return Some( Token::Afficher);
+    } else if multi_char.eq("inv"){
+        return  Some( Token::Inv);
+    } else if multi_char.chars().next().unwrap().is_ascii_alphabetic() {
+        return Some( Token::Identifier );
+    } else {
+        for c in multi_char.chars() {
+            if !c.is_ascii_digit() || c != '.' {
+                return Some( Token::UnknownToken);
             }
-            match c {
-                '\0' => {tokens.push(TokenKind::EOF); break;},
-                ' ' => {continue},
-                '=' => tokens.push(TokenKind::Equal),
-                '+' => tokens.push(TokenKind::Operator { raw: '+', kind: OperatorKind::Adder }),
-                '*' => tokens.push(TokenKind::Operator { raw: '*', kind: OperatorKind::Multiplier }),
-                '^' => tokens.push(TokenKind::Operator { raw: '^', kind: OperatorKind::Power }),
-                '/' => {tokens.push(TokenKind::Operator { raw: '/', kind: OperatorKind::Diviser }); print!("hi");},
-                '-' => tokens.push(TokenKind::Operator { raw: '-', kind: OperatorKind::Substracter }),
-                '(' => tokens.push(TokenKind::OpenParenthesis),
-                ')' => tokens.push(TokenKind::CloseParenthesis),
-                '\n' => tokens.push(TokenKind::NewLine),
-                '`' => {
-                        tokens.push(TokenKind::OpenApostrophe);
-                        let mut s= String::new();
-                        loop {
-                            let c = char_ite.next();
-                            match c {
-                                None => {return Err::<Vec<Token>,LexerError>(LexerError::UnexpectedEndOfFile);},
-                                Some(c) => {
-                                    if c == '´' {
-                                        tokens.push(TokenKind::String(s));
-                                        tokens.push(TokenKind::CloseApostrophe);
-                                        break;
-                                    } else {
-                                        s.push(c);
-                                    }
-                                }
-                            }
-                        }
-                    },
-                '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9' => {
-                    let mut s = String::from(c);
-                    loop {
-                        let c = char_ite.next();
-                        match c {
-                            None => {break;},
-                            Some(c) => {
-                                if !c.is_numeric() && c!='.' { 
-                                    r=c;
-                                    break;
-                                } else {
-                                    s.push(c);
-                                }
-                            }
-                        }
-                    }
-                    
-                    if let Some(end) = tokens.pop() {
-                        match end {
-                            TokenKind::Operator { raw, kind } => {
-                                match kind {
-                                    OperatorKind::Substracter =>{
-                                        let nend = tokens.pop().unwrap_or(TokenKind::UnknownToken(String::new()));
-                                        match nend {
-                                            TokenKind::Real(_) | TokenKind::Integer(_) => {tokens.push(nend); tokens.push(end);},
-                                            TokenKind::UnknownToken(_) => s.insert(0, '-'),
-                                            _ => {tokens.push(nend); s.insert(0, '-')}
-                                        }
-                                    },
-                                    _ => {tokens.push(end);}
-                                }
-                            },
-                            _ => tokens.push(end)
-                        }
-                    }
-                    if s.contains('.') {
-                        tokens.push(TokenKind::Real(s));
-                    } else {
-                        tokens.push(TokenKind::Integer(s));
-                    }
-                },
-                _ => {
+        }
+        if multi_char.contains('.') {
+            return Some(Token::Real(multi_char.parse().unwrap()));
+        } else {
+            return Some(Token::Integer(multi_char.parse().unwrap()));
+        }
+    }
+}
 
-                    if c.is_alphabetic() {
-                        let mut s = String::from(c);
-                        loop {
-                            let c =char_ite.next();
-                            match c {
-                                None => {break;},
-                                Some(c) => {
-                                    if c.is_alphanumeric() {
-                                        s.push(c);
-                                    } else {
-                                        r=c;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        tokens.push(TokenKind::Identifier(s));
-                    } else {
-                        tokens.push(TokenKind::UnknownToken(c.to_string()))
-                    }
+
+impl Iterator for Lexer {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.curr == Some( Token::EOF) || self.input.is_empty() || self.codepoint_offset >= self.input.len() {
+            return None;
+        }
+
+        let char_ite = self.input.get(self.codepoint_offset..).unwrap().chars();
+
+        let mut advance = || {self.codepoint_offset += 1; self.cur_col += 1;};
+
+        let mut multi_char_construct = String::new();
+        let mut construct = None;
+        
+        macro_rules! test_construct {
+            ($false:expr) => {
+                construct = test_multi_char_construct(multi_char_construct);
+                if construct.is_some(){
+                    self.curr = construct;
+                    break;
+                } else {
+                    advance();
+                    self.curr = Some( $false )
+                }
+            };
+        }
+
+        for car in char_ite {
+            match car {
+                '\0' => { test_construct!(Token::EOF);self.codepoint_offset-=1;self.cur_col-=1; break;},
+                '\n' => { test_construct!(Token::NewLine); self.cur_col = 0; self.cur_line+= 1; break;},
+                ' ' => { test_construct!(Token::EOF);},
+                '=' => { test_construct!(Token::Equal); break;},
+                '*' => { test_construct!(Token::Operator { raw: '*', kind:OperatorKind::Multiplier});break;},
+                '+' => { test_construct!(Token::Operator { raw: '+', kind: OperatorKind::Adder });break;},
+                ';' => { test_construct!(Token::Semicolon);break;},
+                '(' => { test_construct!(Token::OpenParenthesis);break;},
+                ')' => { test_construct!(Token::CloseParenthesis);break;},
+                _ => {
+                    advance();
+                    multi_char_construct.push(car);
                 }
             }
         }
 
-        Ok(tokens)
-    }
+        self.curr
 
+    }
 }
