@@ -5,7 +5,7 @@ use std::path::Path;
 
 mod utils;
 
-use crate::utils::lexer::*;
+use crate::utils::tokenizer::*;
 use crate::utils::tokens::*;
 
 fn main() {
@@ -27,7 +27,7 @@ fn main() {
         for line in lines {
             if let Ok(ip) = line {
                 println!("{}", ip);
-                for t in Lexer::from(ip.clone()) {
+                for t in Tokenizer::from(ip.clone()) {
                     match t {
                         Token::UnknownToken(s,d) => {println!("Syntaxical Error: {} is not a valid token",ip.get(s..d).unwrap()); break;},
                         Token::Identifier(s,e) => println!("Identifier({})",ip.get(s..e).unwrap()),
