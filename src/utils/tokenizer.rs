@@ -1,11 +1,11 @@
-//! Lexical analyzer Module
+//! Token constructor Module
 
 #![allow(dead_code,unused_variables)]
 
 use crate::utils::tokens::*;
 
 #[derive(Debug)]
-pub enum LexerError {
+pub enum TokenizerError {
     /** Unexpected end of file */
     UnexpectedEndOfFile,
 
@@ -16,9 +16,9 @@ pub enum LexerError {
     UnknownToken,
 }
 
-/** The lexer object used to tokenize a given input */
+/** The Tokenizer object used to tokenize a given input */
 #[derive(Debug,Clone)]
-pub struct Lexer {
+pub struct Tokenizer {
     /** The entry text */
     pub input: String,
 
@@ -36,10 +36,10 @@ pub struct Lexer {
 
 }
 
-impl Lexer {
+impl Tokenizer {
 
-    pub fn from(input: String) -> Lexer {
-        Lexer {
+    pub fn from(input: String) -> Tokenizer {
+        Tokenizer {
             cur_line:0,
             cur_col:0,
             codepoint_offset:0,
@@ -74,7 +74,7 @@ fn test_multi_char_construct(multi_char:String,offset:usize) -> Option<Token> {
     }
 }
 
-impl Iterator for Lexer {
+impl Iterator for Tokenizer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
