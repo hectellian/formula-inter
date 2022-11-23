@@ -50,7 +50,7 @@ impl Lexer {
 
 }
 
-fn test_multi_char_construct(multi_char:String) -> Option<Token> {
+fn test_multi_char_construct(multi_char:&String) -> Option<Token> {
     
     if multi_char.is_empty() {
         return None;
@@ -87,12 +87,12 @@ impl Iterator for Lexer {
 
         let mut advance = || {self.codepoint_offset += 1; self.cur_col += 1;};
 
-        let mut multi_char_construct = String::new();
+        let multi_char_construct = String::new();
         let mut construct = None;
         
         macro_rules! test_construct {
             ($false:expr) => {
-                construct = test_multi_char_construct(multi_char_construct);
+                construct = test_multi_char_construct(&multi_char_construct);
                 if construct.is_some(){
                     self.curr = construct;
                     break;
@@ -116,7 +116,7 @@ impl Iterator for Lexer {
                 ')' => { test_construct!(Token::CloseParenthesis);break;},
                 _ => {
                     advance();
-                    multi_char_construct.push(car);
+                    let multi_char_construct: String = String::new() + &car.to_string();
                 }
             }
         }
