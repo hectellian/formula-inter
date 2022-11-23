@@ -1,13 +1,11 @@
 use std::env;
-use std::fs::File;
-use std::io::{self, BufRead};
 use std::path::Path;
-
+use std::fs::File;
+use std::io::prelude::*;
 mod utils;
 
-use crate::utils::lexer::*;
-use crate::utils::postfixe::*;
-use crate::utils::eval::*;
+use crate::utils::tokenizer::*;
+use crate::utils::tokens::*;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -17,43 +15,37 @@ fn main() {
     }
 
     let filename = &args[1];
+
+    let contents = read_from(filename);
+    match contents {
+        Ok(content) => {
+            for t in Tokenizer::from(content.clone()) {
+                match t {
+                    Token::UnknownToken(s,d) => {println!("Syntaxical Error: {} is not a valid token",content.get(s..d).unwrap()); break;},
+                    Token::Identifier(s,e) => println!("Identifier({})",content.get(s..e).unwrap()),
+                    _ => println!("{}",t)
+                }
+            }
+            println!("");
+        },
+        Err(e) => println!("{}", e),
+    }
+}
+
+fn read_from(filename: &str) -> Result<String, std::io::Error> {
     if !Path::new(filename).exists() {
         println!("File \"{}\" does not exist", filename);
-        println!("Usage: {} \"file.fi\"", args[0]);
-        return;
     }
-    
-    if let Ok(lines) = read_lines(filename) {
-        // Consumes the iterator, returns an (Optional) String
-        for line in lines {
-            if let Ok(ip) = line {
-                println!("{}", ip);
-                interpret(ip);
-                println!("");
+
+    match File::open(filename) {
+        Ok(mut f) => {
+            let mut content = String::new();
+            let result = f.read_to_string(&mut content);
+            match result {
+                Ok(_) => Ok(content),
+                Err(err) => return Err(err),
             }
         }
+        Err(err) => return Err(err),
     }
 }
-
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
-
-fn interpret(algebric: String) -> EvalResult {
-    let l = Lexer::from(algebric);
-    let t = l.tokenize().ok().unwrap();
-    println!("algebric expression: {:?}", t);
-
-    let p = postfixe(t);
-    println!("postfixe expression: {:?}", p);
-
-    let e = eval(p);
-    println!("evalued expression result: {:?}", e);
-    
-    e
-}
-
-#[cfg(test)]
-mod test;
