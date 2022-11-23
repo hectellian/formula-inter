@@ -49,6 +49,7 @@ impl Lexer {
     }
 }
 
+
 fn test_multi_char_construct(multi_char:String,offset:usize) -> Option<Token> {
     
     if multi_char.is_empty() {
@@ -83,6 +84,7 @@ impl Iterator for Lexer {
 
         let char_ite = self.input.get(self.codepoint_offset..).unwrap().chars();
         let mut advance = || {self.codepoint_offset += 1; self.cur_col += 1;};
+
         let mut multi_char_construct = String::new();
         
         macro_rules! test_construct {
@@ -109,7 +111,7 @@ impl Iterator for Lexer {
                 ')' => { test_construct!(Token::CloseParenthesis);break;},
                 _ => {
                     advance();
-                    multi_char_construct.push(car);
+                    let multi_char_construct: String = String::new() + &car.to_string();
                 }
             }
         }
