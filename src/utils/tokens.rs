@@ -43,7 +43,7 @@ pub enum TokenKind {
     Afficher,
 
     /** aff_ral keyword */
-    Aff_ral,
+    AffRal,
 }
 
 #[derive(Debug,Clone, Copy, PartialEq)]
@@ -60,6 +60,7 @@ impl std::fmt::Display for TokenKind {
         match *self {
             TokenKind::Afficher => write!(f,"Afficher"),
             TokenKind::EOF => write!(f,"EOF"),
+            TokenKind::AffRal => write!(f,"Aff_ral"),
             TokenKind::CloseParenthesis => write!(f,"CloseParenthesis"),
             TokenKind::Equal => write!(f,"Equal"),
             TokenKind::Inv => write!(f,"Inv"),
