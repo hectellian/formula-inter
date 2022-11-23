@@ -103,6 +103,7 @@ impl Iterator for Tokenizer {
                 '\0' => { test_construct!(Token::EOF);self.codepoint_offset-=1;self.cur_col-=1; break;},
                 '\n' => { test_construct!(Token::NewLine); self.cur_col = 0; self.cur_line+= 1; break;},
                 ' ' => { test_construct!(Token::EOF);},
+                '\r' => { test_construct!(Token::EOF)}
                 '=' => { test_construct!(Token::Equal); break;},
                 '*' => { test_construct!(Token::Operator { raw: '*', kind:OperatorKind::Multiplier});break;},
                 '+' => { test_construct!(Token::Operator { raw: '+', kind: OperatorKind::Adder });break;},
