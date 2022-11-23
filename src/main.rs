@@ -1,8 +1,7 @@
 use std::env;
-use std::fs::File;
-use std::io::{self, BufRead};
 use std::path::Path;
-
+use std::fs::File;
+use std::io::prelude::*;
 mod utils;
 
 use crate::utils::tokenizer::*;
@@ -16,33 +15,37 @@ fn main() {
     }
 
     let filename = &args[1];
-    if !Path::new(filename).exists() {
-        println!("File \"{}\" does not exist", filename);
-        println!("Usage: {} \"file.fi\"", args[0]);
-        return;
-    }
-    
-    if let Ok(lines) = read_lines(filename) {
-        // Consumes the iterator, returns an (Optional) String
-        for line in lines {
-            if let Ok(ip) = line {
-                println!("{}", ip);
-                for t in Tokenizer::from(ip.clone()) {
-                    match t {
-                        Token::UnknownToken(s,d) => {println!("Syntaxical Error: {} is not a valid token",ip.get(s..d).unwrap()); break;},
-                        Token::Identifier(s,e) => println!("Identifier({})",ip.get(s..e).unwrap()),
-                        _ => println!("{}",t)
-                    }
-                }
-                println!("");
-            }
-        }
-    }
 
+    let contents = read_from(filename);
+    match contents {
+        Ok(content) => {
+            for t in Tokenizer::from(content.clone()) {
+                match t {
+                    Token::UnknownToken(s,d) => {println!("Syntaxical Error: {} is not a valid token",content.get(s..d).unwrap()); break;},
+                    Token::Identifier(s,e) => println!("Identifier({})",content.get(s..e).unwrap()),
+                    _ => println!("{}",t)
+                }
+            }
+            println!("");
+        },
+        Err(e) => println!("{}", e),
+    }
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+fn read_from(filename: &str) -> Result<String, std::io::Error> {
+    if !Path::new(filename).exists() {
+        println!("File \"{}\" does not exist", filename);
+    }
+
+    match File::open(filename) {
+        Ok(mut f) => {
+            let mut content = String::new();
+            let result = f.read_to_string(&mut content);
+            match result {
+                Ok(_) => Ok(content),
+                Err(err) => return Err(err),
+            }
+        }
+        Err(err) => return Err(err),
+    }
 }
