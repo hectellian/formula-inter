@@ -47,10 +47,10 @@ impl Lexer {
             input:input
         }
     }
-
 }
 
-fn test_multi_char_construct(multi_char:&String) -> Option<Token> {
+
+fn test_multi_char_construct(multi_char:String,offset:usize) -> Option<Token> {
     
     if multi_char.is_empty() {
         return None;
@@ -59,11 +59,11 @@ fn test_multi_char_construct(multi_char:&String) -> Option<Token> {
     } else if multi_char.eq("inv"){
         return  Some( Token::Inv);
     } else if multi_char.chars().next().unwrap().is_ascii_alphabetic() {
-        return Some( Token::Identifier );
+        return Some( Token::Identifier(offset-multi_char.len(),offset));
     } else {
         for c in multi_char.chars() {
-            if !c.is_ascii_digit() || c != '.' {
-                return Some( Token::UnknownToken);
+            if !c.is_ascii_digit() && c != '.' {
+                return Some( Token::UnknownToken(offset-multi_char.len(),offset));
             }
         }
         if multi_char.contains('.') {
@@ -73,32 +73,27 @@ fn test_multi_char_construct(multi_char:&String) -> Option<Token> {
         }
     }
 }
-
-
 impl Iterator for Lexer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
+        
         if self.curr == Some( Token::EOF) || self.input.is_empty() || self.codepoint_offset >= self.input.len() {
             return None;
         }
 
         let char_ite = self.input.get(self.codepoint_offset..).unwrap().chars();
-
         let mut advance = || {self.codepoint_offset += 1; self.cur_col += 1;};
 
-        let multi_char_construct = String::new();
-        let mut construct = None;
+        let mut multi_char_construct = String::new();
         
         macro_rules! test_construct {
             ($false:expr) => {
-                construct = test_multi_char_construct(&multi_char_construct);
-                if construct.is_some(){
-                    self.curr = construct;
+                if !multi_char_construct.is_empty() {
                     break;
                 } else {
                     advance();
-                    self.curr = Some( $false )
+                    self.curr = Some( $false );
                 }
             };
         }
@@ -119,6 +114,10 @@ impl Iterator for Lexer {
                     let multi_char_construct: String = String::new() + &car.to_string();
                 }
             }
+        }
+
+        if !multi_char_construct.is_empty() {
+            self.curr = test_multi_char_construct(multi_char_construct,self.codepoint_offset);
         }
 
         self.curr
