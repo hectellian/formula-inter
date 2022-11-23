@@ -41,6 +41,9 @@ pub enum TokenKind {
 
     /** afficher keyword */
     Afficher,
+
+    /** aff_ral keyword */
+    Aff_ral,
 }
 
 #[derive(Debug,Clone, Copy, PartialEq)]

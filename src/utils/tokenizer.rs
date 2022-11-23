@@ -42,6 +42,8 @@ fn test_multi_char_construct(multi_char:String,offset:usize,line:usize,column:us
         return None;
     }else if multi_char.eq("afficher"){
         return Some( Token::Afficher);
+    } else if multi_char.eq("aff_ral"){
+        return Some(Token::Aff_ral);
     } else if multi_char.eq("inv"){
         return  Some( Token::Inv);
     } else if multi_char.chars().next().unwrap().is_ascii_alphabetic() {
