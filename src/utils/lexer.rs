@@ -73,11 +73,11 @@ fn test_multi_char_construct(multi_char:String,offset:usize) -> Option<Token> {
         }
     }
 }
+
 impl Iterator for Lexer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        
         if self.curr == Some( Token::EOF) || self.input.is_empty() || self.codepoint_offset >= self.input.len() {
             return None;
         }
@@ -85,7 +85,7 @@ impl Iterator for Lexer {
         let char_ite = self.input.get(self.codepoint_offset..).unwrap().chars();
         let mut advance = || {self.codepoint_offset += 1; self.cur_col += 1;};
 
-        let mut multi_char_construct = String::new();
+        let multi_char_construct = String::new();
         
         macro_rules! test_construct {
             ($false:expr) => {
