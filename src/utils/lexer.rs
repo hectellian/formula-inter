@@ -85,7 +85,7 @@ impl Iterator for Lexer {
         let char_ite = self.input.get(self.codepoint_offset..).unwrap().chars();
         let mut advance = || {self.codepoint_offset += 1; self.cur_col += 1;};
 
-        let multi_char_construct = String::new();
+        let mut multi_char_construct = String::new();
         
         macro_rules! test_construct {
             ($false:expr) => {
@@ -111,7 +111,7 @@ impl Iterator for Lexer {
                 ')' => { test_construct!(Token::CloseParenthesis);break;},
                 _ => {
                     advance();
-                    let multi_char_construct: String = String::new() + &car.to_string();
+                    multi_char_construct.push(car);
                 }
             }
         }
