@@ -73,11 +73,11 @@ fn test_multi_char_construct(multi_char:String,offset:usize) -> Option<Token> {
         }
     }
 }
+
 impl Iterator for Lexer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        
         if self.curr == Some( Token::EOF) || self.input.is_empty() || self.codepoint_offset >= self.input.len() {
             return None;
         }
@@ -111,7 +111,7 @@ impl Iterator for Lexer {
                 ')' => { test_construct!(Token::CloseParenthesis);break;},
                 _ => {
                     advance();
-                    let multi_char_construct: String = String::new() + &car.to_string();
+                    multi_char_construct.push(car);
                 }
             }
         }
