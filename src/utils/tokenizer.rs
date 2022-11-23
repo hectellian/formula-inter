@@ -1,20 +1,6 @@
 //! Token constructor Module
 
-#![allow(dead_code,unused_variables)]
-
 use crate::utils::tokens::*;
-
-#[derive(Debug)]
-pub enum TokenizerError {
-    /** Unexpected end of file */
-    UnexpectedEndOfFile,
-
-    /** Unexpected number format */
-    UnexpectedNumberFormat,
-
-    /** Unknown Token read */
-    UnknownToken,
-}
 
 /** The Tokenizer object used to tokenize a given input */
 #[derive(Debug,Clone)]
@@ -50,7 +36,7 @@ impl Tokenizer {
 }
 
 
-fn test_multi_char_construct(multi_char:String,offset:usize) -> Option<Token> {
+fn test_multi_char_construct(multi_char:String,offset:usize,line:usize,column:usize) -> Option<Token> {
     
     if multi_char.is_empty() {
         return None;
@@ -62,14 +48,16 @@ fn test_multi_char_construct(multi_char:String,offset:usize) -> Option<Token> {
         return Some( Token::Identifier(offset-multi_char.len(),offset));
     } else {
         for c in multi_char.chars() {
-            if !c.is_ascii_digit() && c != '.' {
-                return Some( Token::UnknownToken(offset-multi_char.len(),offset));
+            if !c.is_ascii_digit() && c != '.' && c != '-' {
+                return Some( Token::UnknownToken(offset-multi_char.len(),offset,line,column-multi_char.len()));
             }
         }
         if multi_char.contains('.') {
-            return Some(Token::Real(multi_char.parse().unwrap()));
+            return Some(Token::Real(multi_char.parse::<f64>().unwrap()));
+        } else if multi_char.len() == 1 && multi_char.contains('-'){
+            return Some( Token::UnknownToken(offset-multi_char.len(),offset,line,column-multi_char.len()));
         } else {
-            return Some(Token::Integer(multi_char.parse().unwrap()));
+            return Some(Token::Integer(multi_char.parse::<i64>().unwrap()));
         }
     }
 }
@@ -103,7 +91,7 @@ impl Iterator for Tokenizer {
                 '\0' => { test_construct!(Token::EOF);self.codepoint_offset-=1;self.cur_col-=1; break;},
                 '\n' => { test_construct!(Token::NewLine); self.cur_col = 0; self.cur_line+= 1; break;},
                 ' ' => { test_construct!(Token::EOF);},
-                '\r' => { test_construct!(Token::EOF)}
+                '\r' => { test_construct!(Token::EOF)}, // F* u windows
                 '=' => { test_construct!(Token::Equal); break;},
                 '*' => { test_construct!(Token::Operator { raw: '*', kind:OperatorKind::Multiplier});break;},
                 '+' => { test_construct!(Token::Operator { raw: '+', kind: OperatorKind::Adder });break;},
@@ -118,7 +106,7 @@ impl Iterator for Tokenizer {
         }
 
         if !multi_char_construct.is_empty() {
-            self.curr = test_multi_char_construct(multi_char_construct,self.codepoint_offset);
+            self.curr = test_multi_char_construct(multi_char_construct,self.codepoint_offset,self.cur_line,self.cur_col);
         }
 
         self.curr

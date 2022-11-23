@@ -12,14 +12,14 @@ pub enum TokenKind {
     /** The equal operator, reserved for asignation */
     Equal,
 
-    /** Variables identifiers */
+    /** Variables identifiers (start_offset,end_offset) */
     Identifier(usize,usize),
 
     /** Real number */
     Real(f64),
 
     /** Integer number */
-    Integer(u64),
+    Integer(i64),
 
     /** ( delimiting the opening of a parenthesis group */
     OpenParenthesis,
@@ -33,8 +33,8 @@ pub enum TokenKind {
     /** Semicolon token */
     Semicolon,
 
-    /** Unknown token in place of error */
-    UnknownToken(usize,usize),
+    /** Unknown token in place of error (start_offset,end_offset,line,column)*/
+    UnknownToken(usize,usize,usize,usize),
 
     /** inv keywored */
     Inv,
@@ -66,7 +66,7 @@ impl std::fmt::Display for TokenKind {
             TokenKind::Identifier(s, e) => write!(f,"Id({},{})",s,e),
             TokenKind::Integer(v) => write!(f,"Integer({})",v),
             TokenKind::Real(v) => write!(f,"Real({})",v),
-            TokenKind::UnknownToken(s, e) => write!(f,"Unknown({},{})",s,e),
+            TokenKind::UnknownToken(s, e,..) => write!(f,"Unknown({},{})",s,e),
             TokenKind::Operator { raw, .. } => write!(f,"Operator({})",raw)
         }
     }

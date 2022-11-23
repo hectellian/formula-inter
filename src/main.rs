@@ -4,8 +4,7 @@ use std::fs::File;
 use std::io::prelude::*;
 mod utils;
 
-use crate::utils::tokenizer::*;
-use crate::utils::tokens::*;
+use crate::utils::lexing::lexical_anlysis;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -19,14 +18,7 @@ fn main() {
     let contents = read_from(filename);
     match contents {
         Ok(content) => {
-            for t in Tokenizer::from(content.clone()) {
-                match t {
-                    Token::UnknownToken(s,d) => {println!("Syntaxical Error: {} is not a valid token",content.get(s..d).unwrap()); break;},
-                    Token::Identifier(s,e) => println!("Identifier({})",content.get(s..e).unwrap()),
-                    _ => println!("{}",t)
-                }
-            }
-            println!("");
+            lexical_anlysis(content);
         },
         Err(e) => println!("{}", e),
     }
