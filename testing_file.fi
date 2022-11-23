@@ -1,9 +1,5 @@
-2 + 2
-2 + 5
-232 * (2);
-90
-3.0 + 2.5
-32 ++ 45
-id = 8
-afficher id
-inv s
+id = 2*2;
+next = id+1;
+/
+invId = inv next;
+affiche next
