@@ -5,6 +5,8 @@ use std::io::prelude::*;
 mod utils;
 
 use crate::utils::lexing::lexical_anlysis;
+use crate::utils::semanting::f;
+use crate::utils::tokenizer::Tokenizer;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -18,7 +20,8 @@ fn main() {
     let contents = read_from(filename);
     match contents {
         Ok(content) => {
-            lexical_anlysis(content);
+            lexical_anlysis(content.clone());
+            f(Tokenizer::from(content.clone()).collect());
         },
         Err(e) => println!("{}", e),
     }
