@@ -31,9 +31,6 @@ pub enum TokenKind {
     /** ) delimiting the end of a parenthesis group */
     CloseParenthesis(usize,usize),
 
-    /** New line token, a natural separator between inputs */
-    NewLine(usize,usize),
-
     /** Semicolon token */
     Semicolon(usize,usize),
 
@@ -59,7 +56,6 @@ impl std::fmt::Display for TokenKind {
             TokenKind::CloseParenthesis(..) => write!(f,"CloseParenthesis"),
             TokenKind::Equal(..) => write!(f,"Equal"),
             TokenKind::Inv(..) => write!(f,"Inv"),
-            TokenKind::NewLine(..) => write!(f,"NewLine"),
             TokenKind::OpenParenthesis(..) => write!(f,"OpenParenthesis"),
             TokenKind::Semicolon(..) => write!(f,"Semicolon"),
             TokenKind::Identifier(s, e,..) => write!(f,"Id({},{})",s,e),

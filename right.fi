@@ -1,0 +1,3 @@
+i = 12+5*3;
+afficher i;
+aff_ral;
