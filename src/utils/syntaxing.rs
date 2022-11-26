@@ -2,7 +2,6 @@
 
 
 use super::tokens::Token;
-use super::tokens::OperatorKind;
 use super::tokenizer::Tokenizer;
 
 macro_rules! error_print {
@@ -18,8 +17,8 @@ pub fn syntaxical_analysis(input:String){
 pub fn f(tokens:Vec<Token>,start:usize,end:usize) -> bool {
     match tokens[start] {
         Token::Integer(..) | Token::Real(..) | Token::Identifier(..) => {return true},
-        Token::OpenParenthesis => {
-            if tokens[end] == Token::CloseParenthesis {
+        Token::OpenParenthesis(..) => {
+            if matches!(tokens[end],Token::CloseParenthesis(..)) {
                 return e(tokens,start+1,end-1);
             }
             return false;
@@ -38,7 +37,7 @@ fn e(tokens:Vec<Token>,start:usize,end:usize) -> bool {
 fn d(tokens:Vec<Token>,start:usize,end:usize) -> bool{
     if start != end {
         match tokens[start] {
-            Token::Operator { raw:_, kind } if kind == OperatorKind::Adder => {
+            Token::Adder(..) => {
                 return e(tokens,start+1,end);
             }, 
             _ => {
@@ -53,7 +52,7 @@ fn d(tokens:Vec<Token>,start:usize,end:usize) -> bool{
 fn g(tokens:Vec<Token>,start:usize,end:usize) -> bool {
     if start != end {
         match tokens[start] {
-            Token::Operator { raw:_, kind } if kind == OperatorKind::Multiplier => {
+            Token::Multiplier(..) => {
                 return t(tokens,start+1,end);
             },
             _ => {
