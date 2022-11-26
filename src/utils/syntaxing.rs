@@ -1,8 +1,45 @@
 //! Semantical Analysis Module
 
-
 use super::tokens::Token;
 use super::tokenizer::Tokenizer;
+
+#[derive(Debug)]
+enum SToken {
+    SCRIPT,
+    LISTINSTR,
+    INSTR,
+    PDAFF,
+    E,
+    D,
+    T,
+    G,
+    F,
+    TERM(Token),
+    EPS
+}
+
+#[derive(Debug)]
+struct Grammar {
+    s:(SToken,Vec<SToken>),
+    p:Vec<(SToken,Vec<SToken>)>,
+}
+
+impl Grammar {
+    pub fn our() -> Grammar {
+        Grammar { 
+            s: (SToken::SCRIPT,vec![SToken::LISTINSTR]), 
+            p:  vec![
+                (SToken::SCRIPT,vec![SToken::LISTINSTR]),
+                
+                (SToken::LISTINSTR,vec![SToken::INSTR,SToken::LISTINSTR]),
+                (SToken::LISTINSTR,vec![SToken::EPS]),
+
+                (SToken::INSTR,vec![SToken::TERM(Token::Identifier(0,0,0,0)),SToken::TERM(Token::Equal(0,0))]),
+                
+            ]
+        }
+    }
+}
 
 macro_rules! error_print {
     ($tok:expr,$func:expr) => {
@@ -10,60 +47,16 @@ macro_rules! error_print {
     };
 }
 
-pub fn syntaxical_analysis(input:String){
-    let tokens:Vec<Token> = Tokenizer::from(input).collect();
-}
+pub fn syntaxical_analysis(input:String) -> bool {
 
-pub fn f(tokens:Vec<Token>,start:usize,end:usize) -> bool {
-    match tokens[start] {
-        Token::Integer(..) | Token::Real(..) | Token::Identifier(..) => {return true},
-        Token::OpenParenthesis(..) => {
-            if matches!(tokens[end],Token::CloseParenthesis(..)) {
-                return e(tokens,start+1,end-1);
-            }
-            return false;
-        },
-        _ => {
-            error_print!(tokens[start],"F");
-            return false;
-        }
+    let tok_stream = Tokenizer::from(input.clone());
+    let mut pile:Vec<SToken> = vec![SToken::SCRIPT];
+
+    let our_grammar: Grammar = 
+
+    for tok in tok_stream{
+
     }
-}
 
-fn e(tokens:Vec<Token>,start:usize,end:usize) -> bool {
-    true
-}
-
-fn d(tokens:Vec<Token>,start:usize,end:usize) -> bool{
-    if start != end {
-        match tokens[start] {
-            Token::Adder(..) => {
-                return e(tokens,start+1,end);
-            }, 
-            _ => {
-                error_print!(tokens[start],"D");
-                return false;
-            }
-        }
-    }
-    true
-}
-
-fn g(tokens:Vec<Token>,start:usize,end:usize) -> bool {
-    if start != end {
-        match tokens[start] {
-            Token::Multiplier(..) => {
-                return t(tokens,start+1,end);
-            },
-            _ => {
-                error_print!(tokens[start],"g");
-                return false;
-            }
-        }
-    }
-    true
-}
-
-fn t(tokens:Vec<Token>,start:usize,end:usize) -> bool {
     true
 }
