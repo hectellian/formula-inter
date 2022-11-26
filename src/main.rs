@@ -1,11 +1,15 @@
+use std::collections::btree_map::Entry;
 use std::env;
 use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
+use std::sync::Arc;
 mod utils;
 
+use utils::tokens::Token;
+
 use crate::utils::lexing::lexical_anlysis;
-use crate::utils::semanting::f;
+use crate::utils::syntaxing::f;
 use crate::utils::tokenizer::Tokenizer;
 
 fn main() {
@@ -21,7 +25,9 @@ fn main() {
     match contents {
         Ok(content) => {
             lexical_anlysis(content.clone());
-            f(Tokenizer::from(content.clone()).collect());
+            let entry:Vec<Token> = Tokenizer::from(content.clone()).collect();
+            let entry_len = entry.len();
+            f(entry,0,entry_len);
         },
         Err(e) => println!("{}", e),
     }

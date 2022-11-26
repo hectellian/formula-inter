@@ -1,3 +1,5 @@
+afficher test;
+(2+4)
 id = 2*2;
 next = id+1;
 /
@@ -5,4 +7,4 @@ invId = inv next;
 affiche next
 -4.0
 -3
--
+(3+2)
