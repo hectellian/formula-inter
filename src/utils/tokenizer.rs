@@ -68,7 +68,7 @@ impl Iterator for Tokenizer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.input.is_empty() || self.codepoint_offset >= self.input.len() {
+        if matches!(self.curr,Some(Token::EOF(..))) || self.input.is_empty() || self.codepoint_offset >= self.input.len() {
             return None;
         }
 
