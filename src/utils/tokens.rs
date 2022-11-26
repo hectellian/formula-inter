@@ -1,77 +1,73 @@
 
 pub type Token = TokenKind;
 
+/** All toke as the last two arguments (line, col) of start of token */
 #[derive(Debug,Clone,PartialEq,Copy)]
 pub enum TokenKind {
     /** End of token stream */
-    EOF,
+    EOF(usize,usize),
 
-    /** Operators type such as + or * */
-    Operator{raw: char, kind: OperatorKind},
+    /** The multiplication Operator */
+    Multiplier(usize,usize),
+
+    /** The addition Operator */
+    Adder(usize,usize),
 
     /** The equal operator, reserved for asignation */
-    Equal,
+    Equal(usize,usize),
 
     /** Variables identifiers (start_offset,end_offset) */
-    Identifier(usize,usize),
+    Identifier(usize,usize,usize,usize),
 
     /** Real number */
-    Real(f64),
+    Real(f64,usize,usize),
 
     /** Integer number */
-    Integer(i64),
+    Integer(i64,usize,usize),
 
     /** ( delimiting the opening of a parenthesis group */
-    OpenParenthesis,
+    OpenParenthesis(usize,usize),
 
     /** ) delimiting the end of a parenthesis group */
-    CloseParenthesis,
+    CloseParenthesis(usize,usize),
 
     /** New line token, a natural separator between inputs */
-    NewLine,
+    NewLine(usize,usize),
 
     /** Semicolon token */
-    Semicolon,
+    Semicolon(usize,usize),
 
     /** Unknown token in place of error (start_offset,end_offset,line,column)*/
     UnknownToken(usize,usize,usize,usize),
 
     /** inv keywored */
-    Inv,
+    Inv(usize,usize),
 
     /** afficher keyword */
-    Afficher,
+    Afficher(usize,usize),
 
     /** aff_ral keyword */
-    AffRal,
-}
-
-#[derive(Debug,Clone, Copy, PartialEq)]
-pub enum OperatorKind {
-    /** The multiplication Operator */
-    Multiplier,
-
-    /** The addition Operator */
-    Adder,
+    AffRal(usize,usize),
 }
 
 impl std::fmt::Display for TokenKind {
     fn fmt(&self,f: &mut std::fmt::Formatter) -> std::fmt::Result{
         match *self {
-            TokenKind::Afficher => write!(f,"Afficher"),
-            TokenKind::EOF => write!(f,"EOF"),
-            TokenKind::AffRal => write!(f,"Aff_ral"),
-            TokenKind::CloseParenthesis => write!(f,"CloseParenthesis"),
-            TokenKind::Equal => write!(f,"Equal"),
-            TokenKind::Inv => write!(f,"Inv"),
-            TokenKind::NewLine => write!(f,"NewLine"),
-            TokenKind::OpenParenthesis => write!(f,"OpenParenthesis"),
-            TokenKind::Semicolon => write!(f,"Semicolon"),
-            TokenKind::Identifier(s, e) => write!(f,"Id({},{})",s,e),
-            TokenKind::Integer(v) => write!(f,"Integer({})",v),
-            TokenKind::Real(v) => write!(f,"Real({})",v),
+            TokenKind::Afficher(..) => write!(f,"Afficher"),
+            TokenKind::EOF(..) => write!(f,"EOF"),
+            TokenKind::AffRal(..) => write!(f,"Aff_ral"),
+            TokenKind::CloseParenthesis(..) => write!(f,"CloseParenthesis"),
+            TokenKind::Equal(..) => write!(f,"Equal"),
+            TokenKind::Inv(..) => write!(f,"Inv"),
+            TokenKind::NewLine(..) => write!(f,"NewLine"),
+            TokenKind::OpenParenthesis(..) => write!(f,"OpenParenthesis"),
+            TokenKind::Semicolon(..) => write!(f,"Semicolon"),
+            TokenKind::Identifier(s, e,..) => write!(f,"Id({},{})",s,e),
+            TokenKind::Integer(v,..) => write!(f,"Integer({})",v),
+            TokenKind::Real(v,..) => write!(f,"Real({})",v),
             TokenKind::UnknownToken(s, e,..) => write!(f,"Unknown({},{})",s,e),
-            TokenKind::Operator { raw, .. } => write!(f,"Operator({})",raw)
+            TokenKind::Adder(..) => write!(f,"Adder"),
+            TokenKind::Multiplier(..) => write!(f,"Multiplier")
         }
     }
 }
