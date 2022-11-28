@@ -68,12 +68,11 @@ impl Iterator for Tokenizer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.input.is_empty() || self.codepoint_offset >= self.input.len() {
+        if matches!(self.curr,Some(Token::EOF(..))) || self.input.is_empty() || self.codepoint_offset >= self.input.len() {
             return None;
         }
 
         let char_ite = self.input.get(self.codepoint_offset..).unwrap().chars();
-        let mut advance = || {self.codepoint_offset += 1; self.cur_col += 1;};
 
         let mut multi_char_construct = String::new();
         
@@ -82,7 +81,8 @@ impl Iterator for Tokenizer {
                 if !multi_char_construct.is_empty() {
                     break;
                 } else {
-                    advance();
+                    self.codepoint_offset += 1;
+                    self.cur_col += 1;
                     self.curr = Some( $false );
                 }
             };
@@ -91,9 +91,9 @@ impl Iterator for Tokenizer {
         for car in char_ite {
             match car {
                 '\0' => { test_construct!(Token::EOF(self.cur_line,self.cur_line));self.codepoint_offset-=1;self.cur_col-=1; break;},
-                '\n' => { test_construct!(Token::NewLine(self.cur_line,self.cur_line)); self.cur_col = 0; self.cur_line+= 1; break;},
-                ' ' => { test_construct!(Token::EOF(self.cur_line,self.cur_line));},
-                '\r' => { test_construct!(Token::EOF(self.cur_line,self.cur_line))}, // F* u windows
+                '\n' => { test_construct!(Token::EOF(0,0)); self.cur_col = 0; self.cur_line+= 1;},
+                ' ' => { test_construct!(Token::EOF(0,0));},
+                '\r' => { test_construct!(Token::EOF(0,0))}, // F* u windows
                 '=' => { test_construct!(Token::Equal(self.cur_line,self.cur_line)); break;},
                 '*' => { test_construct!(Token::Multiplier(self.cur_line,self.cur_line));break;},
                 '+' => { test_construct!(Token::Adder(self.cur_line,self.cur_line));break;},
@@ -101,7 +101,8 @@ impl Iterator for Tokenizer {
                 '(' => { test_construct!(Token::OpenParenthesis(self.cur_line,self.cur_line));break;},
                 ')' => { test_construct!(Token::CloseParenthesis(self.cur_line,self.cur_line));break;},
                 _ => {
-                    advance();
+                    self.codepoint_offset += 1;
+                    self.cur_col += 1;
                     multi_char_construct.push(car);
                 }
             }
