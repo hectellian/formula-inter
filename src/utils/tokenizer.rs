@@ -93,7 +93,7 @@ impl Iterator for Tokenizer {
                 '\0' => { test_construct!(Token::EOF(self.cur_line,self.cur_line));self.codepoint_offset-=1;self.cur_col-=1; break;},
                 '\n' => { test_construct!(Token::EOF(0,0)); self.cur_col = 0; self.cur_line+= 1;},
                 ' ' => { test_construct!(Token::EOF(0,0));},
-                '\r' => { test_construct!(Token::EOF(0,0))}, // F* u windows
+                '\r' => { test_construct!(Token::EOF(0,0));}, // F* u windows
                 '=' => { test_construct!(Token::Equal(self.cur_line,self.cur_line)); break;},
                 '*' => { test_construct!(Token::Multiplier(self.cur_line,self.cur_line));break;},
                 '+' => { test_construct!(Token::Adder(self.cur_line,self.cur_line));break;},
@@ -110,6 +110,10 @@ impl Iterator for Tokenizer {
 
         if !multi_char_construct.is_empty() {
             self.curr = test_multi_char_construct(multi_char_construct,self.codepoint_offset,self.cur_line,self.cur_col);
+        }
+
+        if matches!(self.curr,Some(Token::EOF(..))) { // The traiéing whitespace problem
+            return None;
         }
 
         self.curr
