@@ -67,3 +67,24 @@ impl std::fmt::Display for TokenKind {
         }
     }
 }
+
+impl Token {
+    pub fn pos(&self) -> (usize,usize){
+        match *self {
+            TokenKind::Afficher(l,c) => return (l,c),
+            TokenKind::EOF(l,c) => return (l,c),
+            TokenKind::AffRal(l,c) => return (l,c),
+            TokenKind::CloseParenthesis(l,c) => return (l,c),
+            TokenKind::Equal(l,c) => return (l,c),
+            TokenKind::Inv(l,c) => return (l,c),
+            TokenKind::OpenParenthesis(l,c) => return (l,c),
+            TokenKind::Semicolon(l,c) => return (l,c),
+            TokenKind::Identifier(_s, _e,l,c) => return (l,c),
+            TokenKind::Integer(_v,l,c) => return (l,c),
+            TokenKind::Real(_v,l,c) => return (l,c),
+            TokenKind::UnknownToken(_s, _e,l,c) => return (l,c),
+            TokenKind::Adder(l,c) => return (l,c),
+            TokenKind::Multiplier(l,c) => return (l,c),
+        }
+    }
+}
