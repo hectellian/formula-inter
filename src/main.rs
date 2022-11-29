@@ -5,6 +5,7 @@ use std::io::prelude::*;
 mod utils;
 
 use crate::utils::lexing::lexical_anlysis;
+use crate::utils::syntaxing::syntaxical_analysis;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -18,7 +19,12 @@ fn main() {
     let contents = read_from(filename);
     match contents {
         Ok(content) => {
-            lexical_anlysis(content);
+            if lexical_anlysis(content.clone()) {
+                if syntaxical_analysis(content.clone())  {
+                    println!("Your file is correct !")
+                }
+            }
+            return;
         },
         Err(e) => println!("{}", e),
     }
