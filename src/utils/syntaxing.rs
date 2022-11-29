@@ -187,7 +187,6 @@ pub fn syntaxical_analysis(input:String) -> bool {
                     match sym {
                         SToken::TERM(t) => {
                             if discriminant(&t) == discriminant(&tok)  {
-                                println!("Right: {} : {}",t,tok);
                                 break;
                             } else {
                                 let p = tok.pos();

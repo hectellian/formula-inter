@@ -1,6 +1,7 @@
 afficher test;
 id (2+4)
 id = 2*2;
+/
 next = id+1;
 invId = inv next;
 affiche next

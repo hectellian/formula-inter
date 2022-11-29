@@ -19,8 +19,12 @@ fn main() {
     let contents = read_from(filename);
     match contents {
         Ok(content) => {
-            lexical_anlysis(content.clone());
-            syntaxical_analysis(content.clone());
+            if lexical_anlysis(content.clone()) {
+                if syntaxical_analysis(content.clone())  {
+                    println!("Your file is correct !")
+                }
+            }
+            return;
         },
         Err(e) => println!("{}", e),
     }
