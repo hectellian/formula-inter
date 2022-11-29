@@ -4,11 +4,8 @@ use std::fs::File;
 use std::io::prelude::*;
 mod utils;
 
-use utils::tokens::Token;
-
 use crate::utils::lexing::lexical_anlysis;
 use crate::utils::syntaxing::syntaxical_analysis;
-use crate::utils::tokenizer::Tokenizer;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -23,7 +20,6 @@ fn main() {
     match contents {
         Ok(content) => {
             lexical_anlysis(content.clone());
-            let entry:Vec<Token> = Tokenizer::from(content.clone()).collect();
             syntaxical_analysis(content.clone());
         },
         Err(e) => println!("{}", e),
