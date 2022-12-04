@@ -6,6 +6,7 @@ mod utils;
 
 use crate::utils::lexing::lexical_anlysis;
 use crate::utils::syntaxing::syntaxical_analysis;
+use crate::utils::evalution::evaluation;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -21,7 +22,9 @@ fn main() {
         Ok(content) => {
             if lexical_anlysis(content.clone()) {
                 if syntaxical_analysis(content.clone())  {
-                    println!("Your file is correct !")
+                    if evaluation(content) {
+                        println!("Success!")
+                    }
                 }
             }
             return;
