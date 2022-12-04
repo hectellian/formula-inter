@@ -50,3 +50,6 @@ fn read_from(filename: &str) -> Result<String, std::io::Error> {
         Err(err) => return Err(err),
     }
 }
+
+#[cfg(test)]
+mod tests;
