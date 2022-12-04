@@ -1,5 +1,5 @@
-i = 12+5*3;
+j=1;
+i = inv 4.0*j;
 afficher i;
 aff_ral;
-
        
