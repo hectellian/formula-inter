@@ -91,7 +91,7 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
                 },
                 Token::Afficher(..) => {
                     return Ok(grule!(SToken::INSTR,[term!(Afficher),SToken::E,term!(Semicolon)]));
-                },
+                }
                 _ => return Err(SError::EINSTR)
             }
         },
@@ -99,6 +99,9 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
             match sym_term {
                 Token::Inv(..) => {
                    return Ok(grule!(SToken::PDAFF,[term!(Inv),SToken::E]));
+                },
+                Token::Sqrt(..) => {
+                    return Ok(grule!(SToken::PDAFF,[term!(Sqrt),SToken::E]));
                 },
                 Token::Identifier(..)|Token::Real(..)|Token::Integer(..)|Token::OpenParenthesis(..) => {
                     return Ok(grule!(SToken::PDAFF,[SToken::E]));

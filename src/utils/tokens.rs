@@ -28,6 +28,12 @@ pub enum TokenKind {
     /** ( delimiting the opening of a parenthesis group */
     OpenParenthesis(usize,usize),
 
+    /** { delimiting the opening of a curly group */
+    OpenCurly(usize,usize),
+
+    /** } delimiting the end of a square group */
+    CloseCurly(usize,usize),
+
     /** ) delimiting the end of a parenthesis group */
     CloseParenthesis(usize,usize),
 
@@ -45,6 +51,9 @@ pub enum TokenKind {
 
     /** aff_ral keyword */
     AffRal(usize,usize),
+
+    /** racine keyword */
+    Sqrt(usize,usize)
 }
 
 impl std::fmt::Display for TokenKind {
@@ -54,9 +63,12 @@ impl std::fmt::Display for TokenKind {
             TokenKind::EOF(..) => write!(f,"EOF"),
             TokenKind::AffRal(..) => write!(f,"Aff_ral"),
             TokenKind::CloseParenthesis(..) => write!(f,"CloseParenthesis"),
+            TokenKind::CloseCurly(..) => write!(f,"CloseCurly"),
             TokenKind::Equal(..) => write!(f,"Equal"),
             TokenKind::Inv(..) => write!(f,"Inv"),
+            TokenKind::Sqrt(..) => write!(f,"Sqrt"),
             TokenKind::OpenParenthesis(..) => write!(f,"OpenParenthesis"),
+            TokenKind::OpenCurly(..) => write!(f,"OpenCurly"),
             TokenKind::Semicolon(..) => write!(f,"Semicolon"),
             TokenKind::Identifier(s, e,..) => write!(f,"Id({},{})",s,e),
             TokenKind::Integer(v,..) => write!(f,"Integer({})",v),
@@ -75,9 +87,12 @@ impl Token {
             TokenKind::EOF(l,c) => return (l,c),
             TokenKind::AffRal(l,c) => return (l,c),
             TokenKind::CloseParenthesis(l,c) => return (l,c),
+            TokenKind::CloseCurly(l,c) => return (l,c),
             TokenKind::Equal(l,c) => return (l,c),
             TokenKind::Inv(l,c) => return (l,c),
+            TokenKind::Sqrt(l,c) => return (l,c),
             TokenKind::OpenParenthesis(l,c) => return (l,c),
+            TokenKind::OpenCurly(l,c) => return (l,c),
             TokenKind::Semicolon(l,c) => return (l,c),
             TokenKind::Identifier(_s, _e,l,c) => return (l,c),
             TokenKind::Integer(_v,l,c) => return (l,c),
