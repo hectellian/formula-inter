@@ -62,3 +62,14 @@ fn test_syntaxical_error() {
 
     assert_eq!(syntaxical_analysis(content), false);
 }
+
+#[test]
+fn test_correct_syntax_wrong_semantics() {
+    let mut content = String::new();
+    content.push_str("i=12+3*(1+j);\n");
+    content.push_str("h=j+1;\n");
+    content.push_str("aff_ral;\n");
+    content.push_str("afficher z;\n");
+
+    assert_eq!(syntaxical_analysis(content),true);
+}
