@@ -46,6 +46,8 @@ fn test_multi_char_construct(multi_char:String,offset:usize,line:usize,column:us
         return Some(Token::AffRal(line,column-multi_char.len()));
     } else if multi_char.eq("inv"){
         return  Some( Token::Inv(line,column-multi_char.len()));
+    } else if multi_char.eq("racine"){
+        return Some(Token::Sqrt(line,column-multi_char.len()));
     } else if multi_char.chars().next().unwrap().is_ascii_alphabetic() {
         return Some( Token::Identifier(offset-multi_char.len(),offset,line,column-multi_char.len()));
     } else {
@@ -100,6 +102,8 @@ impl Iterator for Tokenizer {
                 ';' => { test_construct!(Token::Semicolon(self.cur_line,self.cur_line));break;},
                 '(' => { test_construct!(Token::OpenParenthesis(self.cur_line,self.cur_line));break;},
                 ')' => { test_construct!(Token::CloseParenthesis(self.cur_line,self.cur_line));break;},
+                '{' => { test_construct!(Token::OpenCurly(self.cur_line,self.cur_line));break;},
+                '}' => { test_construct!(Token::CloseCurly(self.cur_line,self.cur_line));break;},
                 _ => {
                     self.codepoint_offset += 1;
                     self.cur_col += 1;

@@ -69,6 +69,17 @@ fn inv(a:Token) -> Result<Token,RuntimeError>{
     }
 }
 
+fn sqrt(a:Token) -> Result<Token,RuntimeError>{
+    match a {
+        Token::Real(va,..) => Ok(Token::Real(va.sqrt(), 0, 0)),
+        Token::Integer(va,..) => Ok(Token::Real((va as f64).sqrt(), 0, 0)),
+
+        _ => return Err(RuntimeError::IncorrectType)
+    }
+}
+
+// fn loop_(nb:Token);
+
 fn afficher(a:Token) -> Option<RuntimeError> {
     match a {
         Token::Real(v,..) => print!("{} ",v),
@@ -157,7 +168,6 @@ fn postfix(tokens:Vec<Token>) -> Result<Vec<Token>,RuntimeError> {
     while let Some(tok) = pile.pop() {
         res.push(tok);
     }
-    println!("{:?}",res);
     Ok(res)
 }
 
@@ -283,6 +293,39 @@ pub fn evaluation(input:String) -> bool {
                                             Err(e) => {println!("{:?}",e); return false},
                                             Ok(r) => {
                                                 match inv(r) {
+                                                    Err(e) => {println!("{:?}",e); return false},
+                                                    Ok(r) => {
+                                                        let id = input.get(s..e).unwrap();
+                                                        if let Some(pos) = vars.iter().position(|&var|var.0==id) {
+                                                            vars[pos].1 = r;
+                                                        } else {
+                                                            vars.push((id,r));
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    },
+                                    _ => {println!("Not supposed to happen found something else than identifier in assignation")}
+                                }
+                            }
+                        },
+                        Token::Sqrt(..) => {
+                            if let Some(tok) = pile.pop() {
+                                match tok {
+                                    Token::Equal(..) =>{},
+                                    _ => {println!("Not supposed to happen found something else than equal before an sqrt token");return false;}
+                                }
+                            }
+                            if let Some(tok) = pile.pop() {
+                                match tok {
+                                    Token::Identifier(s,e,..) => {
+                                        replaced_pile.reverse();
+                                        match eval_expr(replaced_pile) {
+                                            Err(e) => {println!("{:?}",e); return false},
+                                            Ok(r) => {
+                                                match sqrt(r) {
                                                     Err(e) => {println!("{:?}",e); return false},
                                                     Ok(r) => {
                                                         let id = input.get(s..e).unwrap();
