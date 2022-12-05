@@ -27,7 +27,6 @@ fn main() {
                     }
                 }
             }
-            return;
         },
         Err(e) => println!("{}", e),
     }

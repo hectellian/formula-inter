@@ -11,7 +11,7 @@ enum RuntimeError {
 
     //PostfixingError,
 
-    OutOfMemory,
+    //OutOfMemory,
 
     EvaluationIncoherence(u32),
 
@@ -87,12 +87,11 @@ fn postfix(tokens:Vec<Token>) -> Result<Vec<Token>,RuntimeError> {
     let mut closepar_num = 0;
     let mut res:Vec<Token> = Vec::new();
 
-    match res.try_reserve_exact(tokens.len()).err() {
-        Some(..) => {return Err(RuntimeError::OutOfMemory)},
-        None => {}
-    }
+    res.reserve_exact(tokens.len());
 
-    for tok in tokens {
+    let mut it = tokens.into_iter();
+
+    while let Some(tok) = it.next() {
         match tok {
             Token::OpenParenthesis(..) => {
                 openpar_num+=1;
@@ -109,35 +108,8 @@ fn postfix(tokens:Vec<Token>) -> Result<Vec<Token>,RuntimeError> {
                     rec_pile = Vec::new();
                     match ir {
                         Err(e) => {return Err(e);},
-                        Ok(v) => {
-                            for tok in v {
-                                match tok {
-                                    Token::Real(..)|Token::Integer(..) => {
-                                        res.push(tok);
-                                    },
-                                    Token::Multiplier(..) => {
-                                        match pile.last() {
-                                            None => pile.push(tok),
-                                            Some(s) => {
-                                                if discriminant(s) == discriminant(&tok) {
-                                                    res.push(pile.pop().unwrap());   
-                                                }
-                                                pile.push(tok);
-                                            }
-                                        }
-                                    },
-                                    Token::Adder(..) => {
-                                        match pile.last() {
-                                            None => {},
-                                            Some(_s) => {
-                                                res.push(pile.pop().unwrap())
-                                            }
-                                        }
-                                        pile.push(tok);
-                                    },
-                                    _ => return Err(RuntimeError::IncorrectType)
-                                }
-                            }
+                        Ok(mut v) => {
+                            res.append(&mut v);
                         }
                     }
                     closepar_num = 0;
@@ -145,6 +117,10 @@ fn postfix(tokens:Vec<Token>) -> Result<Vec<Token>,RuntimeError> {
                 }
             },
             Token::Adder(..) => {
+                if openpar_num != 0 {
+                    rec_pile.push(tok);
+                    continue;
+                }
                 match pile.last() {
                     None => {},
                     Some(..) => {
@@ -154,6 +130,10 @@ fn postfix(tokens:Vec<Token>) -> Result<Vec<Token>,RuntimeError> {
                 pile.push(tok);
             },
             Token::Multiplier(..) => {
+                if openpar_num != 0 {
+                    rec_pile.push(tok);
+                    continue;
+                }
                 match pile.last() {
                     None => pile.push(tok),
                     Some(s) => {
@@ -164,13 +144,20 @@ fn postfix(tokens:Vec<Token>) -> Result<Vec<Token>,RuntimeError> {
                     }
                 }
             },            
-            _ => res.push(tok)
+            _ => {
+                if openpar_num != 0 {
+                    rec_pile.push(tok);
+                    continue;
+                }
+                res.push(tok);
+            }
         }
     }
 
     while let Some(tok) = pile.pop() {
         res.push(tok);
     }
+    println!("{:?}",res);
     Ok(res)
 }
 
@@ -228,8 +215,7 @@ fn eval_expr(expr:Vec<Token>) -> Result<Token,RuntimeError> {
 
 pub fn evaluation(input:String) -> bool {
 
-    let mut var_name:Vec<&str> = Vec::new();
-    let mut var_val:Vec<Token> = Vec::new();
+    let mut vars:Vec<(&str,Token)> = Vec::new();
 
     let mut pile:Vec<Token> = Vec::new();
 
@@ -243,15 +229,9 @@ pub fn evaluation(input:String) -> bool {
                     match tok {
                         Token::Identifier(s, e,l,c) => {
                             let id = input.get(s..e).unwrap();
-                            let mut found = false;
-                            for i in 0..var_name.len() {
-                                if var_name[i] == id {
-                                    replaced_pile.push(var_val[i]);
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if !found {
+                            if  let Some(v) = vars.iter().find(|&&var|var.0==id){
+                                replaced_pile.push(v.1);
+                            } else {
                                 println!("Semantical Error: use of undeclared value: '{}' at line: {} column: {}",id,l+1,c+1);
                                 return false;
                             }
@@ -260,27 +240,16 @@ pub fn evaluation(input:String) -> bool {
                             if let Some(tok) = pile.pop() {
                                 match tok {
                                     Token::Identifier(s,e,..) => {
-                                        let id = input.get(s..e).unwrap();
-                                        let mut found = false;
-                                        for i in 0..(var_name.len()) {
-                                            if var_name[i] == id {
-                                                replaced_pile.reverse();
-                                                match eval_expr(replaced_pile){
-                                                    Ok(r) => {
-                                                        var_val[i] = r;
-                                                        replaced_pile = Vec::new();
-                                                        found = true;
-                                                        break;},
-                                                    Err(e) => {println!("{:?}",e); return false},
+                                        replaced_pile.reverse();
+                                        match eval_expr(replaced_pile) {
+                                            Err(e) => {println!("{:?}",e); return false},
+                                            Ok(r) => {
+                                                let id = input.get(s..e).unwrap();
+                                                if let Some(pos) = vars.iter().position(|&var| var.0==id) {
+                                                    vars[pos].1 = r;
+                                                } else {
+                                                    vars.push((id,r));
                                                 }
-                                            }
-                                        }
-                                        if !found {
-                                            var_name.push(id);
-                                            replaced_pile.reverse();
-                                            match eval_expr(replaced_pile){
-                                                Ok(r) => var_val.push(r),
-                                                Err(e) => {println!("{:?}",e); return false},
                                             }
                                         }
                                         break;
@@ -303,44 +272,27 @@ pub fn evaluation(input:String) -> bool {
                             if let Some(tok) = pile.pop() {
                                 match tok {
                                     Token::Equal(..) =>{},
-                                    _ => {println!("Not supposed to happen found something else than equal before an inv token")}
+                                    _ => {println!("Not supposed to happen found something else than equal before an inv token");return false;}
                                 }
                             }
                             if let Some(tok) = pile.pop() {
                                 match tok {
                                     Token::Identifier(s,e,..) => {
-                                        let id = input.get(s..e).unwrap();
-                                        let mut found = false;
-                                        for i in 0..var_name.len() {
-                                            if var_name[i]==id {
-                                                found = true;
-                                                replaced_pile.reverse();
-                                                match eval_expr(replaced_pile){
-                                                    Ok(r) => {
-                                                        match inv(r) {
-                                                            Ok(r) => {
-                                                                var_val[i] = r;
-                                                                replaced_pile = Vec::new();
-                                                                break;
-                                                            },
-                                                            Err(e) => {println!("{:?}",e); return false},        
-                                                        }
-                                                    },
+                                        replaced_pile.reverse();
+                                        match eval_expr(replaced_pile) {
+                                            Err(e) => {println!("{:?}",e); return false},
+                                            Ok(r) => {
+                                                match inv(r) {
                                                     Err(e) => {println!("{:?}",e); return false},
-                                                }
-                                            }
-                                        }
-                                        if !found {
-                                            var_name.push(id);
-                                            replaced_pile.reverse();
-                                            match eval_expr(replaced_pile){
-                                                Ok(r) => {
-                                                    match inv(r) {
-                                                        Ok(r) => var_val.push(r),
-                                                        Err(e) => {println!("{:?}",e); return false},        
+                                                    Ok(r) => {
+                                                        let id = input.get(s..e).unwrap();
+                                                        if let Some(pos) = vars.iter().position(|&var|var.0==id) {
+                                                            vars[pos].1 = r;
+                                                        } else {
+                                                            vars.push((id,r));
+                                                        }
                                                     }
-                                                },
-                                                Err(e) => {println!("{:?}",e); return false},
+                                                }
                                             }
                                         }
                                         break;

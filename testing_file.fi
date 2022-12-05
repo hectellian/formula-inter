@@ -1,10 +1,8 @@
-afficher test;
-id (2+4)
-id = 2*2;
-/
-next = id+1;
-invId = inv next;
-affiche next
--4.0
--3
-(3+2)
+2 + 2
+2 - 2
+2 + -2
+234^2 * (2- 432/3)
+0
+
+9:0
+3/0
