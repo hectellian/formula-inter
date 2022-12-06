@@ -1,0 +1,9 @@
+i = 12+5*3;
+i=(1+(2*1))*(1+2);
+r = racine i;
+
+afficher i;
+aff_ral;
+
+afficher r;
+aff_ral;
