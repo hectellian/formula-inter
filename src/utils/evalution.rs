@@ -24,15 +24,15 @@ fn mul(a:Token,b:Token)->Result<Token,RuntimeError>{
     match a {
         Token::Real(va, ..) => {
             match b {
-                Token::Real(vb,..) => return Ok(Token::Real(va*vb,0,0)),
-                Token::Integer(vb,..) => return Ok(Token::Real(vb as f64 * va,0,0)),
+                Token::Real(vb,..) => return Ok(Token::Real(va*vb,None)),
+                Token::Integer(vb,..) => return Ok(Token::Real(vb as f64 * va,None)),
                 _ => return Err(RuntimeError::IncorrectType)
             }
         }
         Token::Integer(va,..) => {
             match b {
-                Token::Real(vb,..) => return Ok(Token::Real(va as f64 * vb,0,0)),
-                Token::Integer(vb,..) => Ok(Token::Integer(va*vb,0,0)),
+                Token::Real(vb,..) => return Ok(Token::Real(va as f64 * vb,None)),
+                Token::Integer(vb,..) => Ok(Token::Integer(va*vb,None)),
                 _ => Err(RuntimeError::IncorrectType)
             }
         }
@@ -44,15 +44,15 @@ fn add(a:Token,b:Token)->Result<Token,RuntimeError>{
     match a {
         Token::Real(va, ..) => {
             match b {
-                Token::Real(vb,..) => return Ok(Token::Real(va+vb,0,0)),
-                Token::Integer(vb,..) => return Ok(Token::Real(vb as f64 + va,0,0)),
+                Token::Real(vb,..) => return Ok(Token::Real(va+vb,None)),
+                Token::Integer(vb,..) => return Ok(Token::Real(vb as f64 + va,None)),
                 _ => return Err(RuntimeError::IncorrectType)
             }
         }
         Token::Integer(va,..) => {
             match b {
-                Token::Real(vb,..) => return Ok(Token::Real(va as f64 + vb,0,0)),
-                Token::Integer(vb,..) => Ok(Token::Integer(va+vb,0,0)),
+                Token::Real(vb,..) => return Ok(Token::Real(va as f64 + vb,None)),
+                Token::Integer(vb,..) => Ok(Token::Integer(va+vb,None)),
                 _ => Err(RuntimeError::IncorrectType)
             }
         }
@@ -62,8 +62,8 @@ fn add(a:Token,b:Token)->Result<Token,RuntimeError>{
 
 fn inv(a:Token) -> Result<Token,RuntimeError>{
     match a {
-        Token::Real(va,..) => Ok(Token::Real(1.0/va, 0, 0)),
-        Token::Integer(va,..) => Ok(Token::Integer(1/va, 0, 0)),
+        Token::Real(va,..) => Ok(Token::Real(1.0/va,None)),
+        Token::Integer(va,..) => Ok(Token::Integer(1/va, None)),
 
         _ => return Err(RuntimeError::IncorrectType)
     }
@@ -71,8 +71,8 @@ fn inv(a:Token) -> Result<Token,RuntimeError>{
 
 fn sqrt(a:Token) -> Result<Token,RuntimeError>{
     match a {
-        Token::Real(va,..) => Ok(Token::Real(va.sqrt(), 0, 0)),
-        Token::Integer(va,..) => Ok(Token::Real((va as f64).sqrt(), 0, 0)),
+        Token::Real(va,..) => Ok(Token::Real(va.sqrt(),None)),
+        Token::Integer(va,..) => Ok(Token::Real((va as f64).sqrt(),None)),
 
         _ => return Err(RuntimeError::IncorrectType)
     }
@@ -237,12 +237,13 @@ pub fn evaluation(input:String) -> bool {
 
                 while let Some(tok) = pile.pop() {
                     match tok {
-                        Token::Identifier(s, e,l,c) => {
+                        Token::Identifier(s, e,p) => {
                             let id = input.get(s..e).unwrap();
                             if  let Some(v) = vars.iter().find(|&&var|var.0==id){
                                 replaced_pile.push(v.1);
                             } else {
-                                println!("Semantical Error: use of undeclared value: '{}' at line: {} column: {}",id,l+1,c+1);
+                                let pos = p.unwrap();
+                                println!("Semantical Error: use of undeclared value: '{}' at line: {} column: {}",id,pos.0+1,pos.1+1);
                                 return false;
                             }
                         },

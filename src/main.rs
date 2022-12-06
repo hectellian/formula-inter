@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::prelude::*;
 mod utils;
 
-use crate::utils::lexing::lexical_anlysis;
+use crate::utils::lexing::lexical_analysis;
 use crate::utils::syntaxing::syntaxical_analysis;
 use crate::utils::evalution::evaluation;
 
@@ -20,12 +20,15 @@ fn main() {
     let contents = read_from(filename);
     match contents {
         Ok(content) => {
-            if lexical_anlysis(content.clone()) {
-                if syntaxical_analysis(content.clone())  {
-                    if evaluation(content) {
-                        println!("Success!")
+            match lexical_analysis(content.clone()) {
+                Ok(_) => {
+                    if syntaxical_analysis(content.clone())  {
+                        if evaluation(content) {
+                            println!("Success!")
+                        }
                     }
-                }
+                },
+                Err(es) => {println!("Lexical Error detected:\n");es.into_iter().for_each(|e| print!("{}",e))}
             }
         },
         Err(e) => println!("{}", e),
