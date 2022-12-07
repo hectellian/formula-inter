@@ -8,7 +8,7 @@ fn test_tokens() {
     content.push_str("c = 3;\n");
     content.push_str("d = 4;\n");
 
-    assert_eq!(lexical_anlysis(content), true);
+    assert!(matches!(lexical_analysis(content),Ok(true)));
 }
 
 #[test]
@@ -19,7 +19,7 @@ fn test_tokens_with_spaces() {
     content.push_str("c = 3; ");
     content.push_str("d = 4; ");
 
-    assert_eq!(lexical_anlysis(content), true);
+    assert!(matches!(lexical_analysis(content),Ok(true)));
 }
 
 #[test]
@@ -30,7 +30,7 @@ fn test_tokens_with_tabs() {
     content.push_str("c = 3;    ");
     content.push_str("d = 4;    ");
 
-    assert_eq!(lexical_anlysis(content), true);
+    assert!(matches!(lexical_analysis(content),Ok(true)));
 }
 
 #[test]
@@ -41,7 +41,7 @@ fn test_tokens_with_newlines() {
     content.push_str("c = 3;\n");
     content.push_str("d = 4;\n");
 
-    assert_eq!(lexical_anlysis(content), true);
+    assert!(matches!(lexical_analysis(content),Ok(true)));
 }
 
 #[test]
@@ -52,5 +52,5 @@ fn test_unkown_tokens() {
     tokens.push_str("!");
     tokens.push_str("?");
 
-    assert_eq!(lexical_anlysis(tokens), false);
+    assert!(matches!(lexical_analysis(tokens),Err(..)));
 }

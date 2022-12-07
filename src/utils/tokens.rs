@@ -5,55 +5,58 @@ pub type Token = TokenKind;
 #[derive(Debug,Clone,PartialEq,Copy)]
 pub enum TokenKind {
     /** End of token stream */
-    EOF(usize,usize),
+    EOF(Option<(usize,usize)>),
 
     /** The multiplication Operator */
-    Multiplier(usize,usize),
+    Multiplier(Option<(usize,usize)>),
 
     /** The addition Operator */
-    Adder(usize,usize),
+    Adder(Option<(usize,usize)>),
 
     /** The equal operator, reserved for asignation */
-    Equal(usize,usize),
+    Equal(Option<(usize,usize)>),
 
     /** Variables identifiers (start_offset,end_offset) */
-    Identifier(usize,usize,usize,usize),
+    Identifier(usize,usize,Option<(usize,usize)>),
 
     /** Real number */
-    Real(f64,usize,usize),
+    Real(f64,Option<(usize,usize)>),
 
     /** Integer number */
-    Integer(i64,usize,usize),
+    Integer(i64,Option<(usize,usize)>),
 
     /** ( delimiting the opening of a parenthesis group */
-    OpenParenthesis(usize,usize),
-
-    /** { delimiting the opening of a curly group */
-    OpenCurly(usize,usize),
-
-    /** } delimiting the end of a square group */
-    CloseCurly(usize,usize),
+    OpenParenthesis(Option<(usize,usize)>),
 
     /** ) delimiting the end of a parenthesis group */
-    CloseParenthesis(usize,usize),
+    CloseParenthesis(Option<(usize,usize)>),
+
+    /** { delimiting the opening of a curly group */
+    OpenCurly(Option<(usize,usize)>),
+
+    /** loop tokne initialising a loop */
+    Loop(Option<(usize,usize)>),
+
+    /** } delimiting the end of a curly group */
+    CloseCurly(Option<(usize,usize)>),
 
     /** Semicolon token */
-    Semicolon(usize,usize),
+    Semicolon(Option<(usize,usize)>),
 
     /** Unknown token in place of error (start_offset,end_offset,line,column)*/
-    UnknownToken(usize,usize,usize,usize),
+    UnknownToken(usize,usize,Option<(usize,usize)>),
 
     /** inv keywored */
-    Inv(usize,usize),
+    Inv(Option<(usize,usize)>),
 
     /** afficher keyword */
-    Afficher(usize,usize),
+    Afficher(Option<(usize,usize)>),
 
     /** aff_ral keyword */
-    AffRal(usize,usize),
+    AffRal(Option<(usize,usize)>),
 
     /** racine keyword */
-    Sqrt(usize,usize)
+    Sqrt(Option<(usize,usize)>)
 }
 
 impl std::fmt::Display for TokenKind {
@@ -75,31 +78,33 @@ impl std::fmt::Display for TokenKind {
             TokenKind::Real(v,..) => write!(f,"Real({})",v),
             TokenKind::UnknownToken(s, e,..) => write!(f,"Unknown({},{})",s,e),
             TokenKind::Adder(..) => write!(f,"Adder"),
-            TokenKind::Multiplier(..) => write!(f,"Multiplier")
+            TokenKind::Multiplier(..) => write!(f,"Multiplier"),
+            TokenKind::Loop(..) => write!(f,"Loop")
         }
     }
 }
 
 impl Token {
-    pub fn pos(&self) -> (usize,usize){
+    pub fn pos(&self) -> Option<(usize,usize)>{
         match *self {
-            TokenKind::Afficher(l,c) => return (l,c),
-            TokenKind::EOF(l,c) => return (l,c),
-            TokenKind::AffRal(l,c) => return (l,c),
-            TokenKind::CloseParenthesis(l,c) => return (l,c),
-            TokenKind::CloseCurly(l,c) => return (l,c),
-            TokenKind::Equal(l,c) => return (l,c),
-            TokenKind::Inv(l,c) => return (l,c),
-            TokenKind::Sqrt(l,c) => return (l,c),
-            TokenKind::OpenParenthesis(l,c) => return (l,c),
-            TokenKind::OpenCurly(l,c) => return (l,c),
-            TokenKind::Semicolon(l,c) => return (l,c),
-            TokenKind::Identifier(_s, _e,l,c) => return (l,c),
-            TokenKind::Integer(_v,l,c) => return (l,c),
-            TokenKind::Real(_v,l,c) => return (l,c),
-            TokenKind::UnknownToken(_s, _e,l,c) => return (l,c),
-            TokenKind::Adder(l,c) => return (l,c),
-            TokenKind::Multiplier(l,c) => return (l,c),
+            TokenKind::Afficher(p) => return p,
+            TokenKind::EOF(p) => return p,
+            TokenKind::AffRal(p) => return p,
+            TokenKind::CloseParenthesis(p) => return p,
+            TokenKind::CloseCurly(p) => return p,
+            TokenKind::Equal(p) => return p,
+            TokenKind::Inv(p) => return p,
+            TokenKind::Sqrt(p) => return p,
+            TokenKind::OpenParenthesis(p) => return p,
+            TokenKind::OpenCurly(p) => return p,
+            TokenKind::Semicolon(p) => return p,
+            TokenKind::Identifier(_s, _e,p) => return p,
+            TokenKind::Integer(_v,p) => return p,
+            TokenKind::Real(_v,p) => return p,
+            TokenKind::UnknownToken(_s, _e,p) => return p,
+            TokenKind::Adder(p) => return p,
+            TokenKind::Multiplier(p) => return p,
+            TokenKind::Loop(p) => return p,
         }
     }
 }
