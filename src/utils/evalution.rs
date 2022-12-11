@@ -276,6 +276,7 @@ fn eval_rec<'a,'b>(input:&'a String,vars:&mut Vec<(&'b str,Token)>,entry:Vec<Tok
                 let mut curly:usize = 1;
                 while let Some(tok) = tok_iter.next() {
                     match tok {
+                        Token::OpenCurly(..) => curly+=1,
                         Token::CloseCurly(..) => {
                             curly-=1;
                             if curly == 0{
