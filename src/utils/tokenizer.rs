@@ -30,7 +30,7 @@ impl Tokenizer {
             cur_col:0,
             codepoint_offset:0,
             curr: None,
-            input:input
+            input
         }
     }
 }
@@ -40,32 +40,43 @@ fn test_multi_char_construct(multi_char:String,offset:usize,line:usize,column:us
     
     if multi_char.is_empty() {
         return None;
-    } else if multi_char.eq("loop") {
-        return Some(Token::Loop(Some((line,column-multi_char.len()))));
-    }else if multi_char.eq("afficher"){
-        return Some( Token::Afficher(Some((line,column-multi_char.len()))));
-    } else if multi_char.eq("aff_ral"){
-        return Some(Token::AffRal(Some((line,column-multi_char.len()))));
-    } else if multi_char.eq("inv"){
-        return  Some( Token::Inv(Some((line,column-multi_char.len()))));
-    } else if multi_char.eq("racine"){
-        return Some(Token::Sqrt(Some((line,column-multi_char.len()))));
-    } else if multi_char.chars().next().unwrap().is_ascii_alphabetic() {
-        return Some( Token::Identifier(offset-multi_char.len(),offset,Some((line,column-multi_char.len()))));
-    } else {
-        for c in multi_char.chars() {
-            if !c.is_ascii_digit() && c != '.' && c != '-' {
-                return Some( Token::UnknownToken(offset-multi_char.len(),offset,Some((line,column-multi_char.len()))));
-            }
-        }
-        if multi_char.contains('.') {
-            return Some(Token::Real(multi_char.parse::<f64>().unwrap(),Some((line,column-multi_char.len()))));
-        } else if multi_char.len() == 1 && multi_char.starts_with("-"){
-            return Some( Token::UnknownToken(offset-multi_char.len(),offset,Some((line,column-multi_char.len()))));
-        } else {
-            return Some(Token::Integer(multi_char.parse::<i64>().unwrap_or_default(),Some((line,column-multi_char.len()))));
+    }
+
+    macro_rules! b_pos {
+        () => {
+            Some((line,column-multi_char.len())) 
+        };
+    }
+    
+    match multi_char.as_str() {
+        "loop" => return Some(Token::Loop(b_pos!())),
+        "afficher" => return Some( Token::Afficher(b_pos!())),
+        "aff_ral" => return Some(Token::AffRal(Some((line,column-multi_char.len())))),
+        "inv" => return Some(Token::Inv(b_pos!())),
+        "racine" => return Some(Token::Sqrt(b_pos!())),
+        _ => {}
+    }
+
+    if multi_char.chars().next().unwrap().is_ascii_alphabetic() {
+        return Some( Token::Identifier(offset-multi_char.len(),offset,b_pos!()));
+    }
+
+    for c in multi_char.chars() {
+        if !c.is_ascii_digit() && c != '.' && c != '-' {
+            return Some( Token::UnknownToken(offset-multi_char.len(),offset,b_pos!()));
         }
     }
+
+    if multi_char.contains('.') {
+        return Some(Token::Real(multi_char.parse::<f64>().ok().unwrap_or_default(),b_pos!()));
+    }
+
+    if multi_char.len() == 1 && multi_char.starts_with("-"){
+        return Some( Token::UnknownToken(offset-multi_char.len(),offset,b_pos!()));
+    }
+    
+    return Some(Token::Integer(multi_char.parse::<i64>().unwrap_or_default(),b_pos!()));
+    
 }
 
 impl Iterator for Tokenizer {
@@ -76,7 +87,7 @@ impl Iterator for Tokenizer {
             return None;
         }
 
-        let char_ite = self.input.get(self.codepoint_offset..).unwrap().chars();
+        let char_ite = self.input.get(self.codepoint_offset..).unwrap_or_default().chars();
 
         let mut multi_char_construct = String::new();
         
@@ -84,28 +95,34 @@ impl Iterator for Tokenizer {
             ($false:expr) => {
                 if !multi_char_construct.is_empty() {
                     break;
-                } else {
-                    self.codepoint_offset += 1;
-                    self.cur_col += 1;
-                    self.curr = Some( $false );
                 }
+                
+                self.codepoint_offset += 1;
+                self.cur_col += 1;
+                self.curr = Some( $false );
+                
+            };
+        }
+
+        macro_rules! b_pos {
+            () => {
+                Some((self.cur_line,self.cur_col))  
             };
         }
 
         for car in char_ite {
             match car {
-                '\0' => { test_construct!(Token::EOF(Some((self.cur_line,self.cur_line))));self.codepoint_offset-=1;self.cur_col-=1; break;},
+                '\0' => { test_construct!(Token::EOF(b_pos!()));self.codepoint_offset-=1;self.cur_col-=1; break;},
                 '\n' => { test_construct!(Token::EOF(None)); self.cur_col = 0; self.cur_line+= 1;},
-                ' '|'\t' => { test_construct!(Token::EOF(None));},
-                '\r' => { test_construct!(Token::EOF(None));}, // F* u windows
-                '=' => { test_construct!(Token::Equal(Some((self.cur_line,self.cur_line)))); break;},
-                '*' => { test_construct!(Token::Multiplier(Some((self.cur_line,self.cur_line))));break;},
-                '+' => { test_construct!(Token::Adder(Some((self.cur_line,self.cur_line))));break;},
-                ';' => { test_construct!(Token::Semicolon(Some((self.cur_line,self.cur_line))));break;},
-                '(' => { test_construct!(Token::OpenParenthesis(Some((self.cur_line,self.cur_line))));break;},
-                ')' => { test_construct!(Token::CloseParenthesis(Some((self.cur_line,self.cur_line))));break;},
-                '{' => { test_construct!(Token::OpenCurly(Some((self.cur_line,self.cur_line))));break;},
-                '}' => { test_construct!(Token::CloseCurly(Some((self.cur_line,self.cur_line))));break;},
+                ' '|'\t'|'\r' => { test_construct!(Token::EOF(None));}, // F* u windows
+                '=' => { test_construct!(Token::Equal(b_pos!())); break;},
+                '*' => { test_construct!(Token::Multiplier(b_pos!()));break;},
+                '+' => { test_construct!(Token::Adder(b_pos!()));break;},
+                ';' => { test_construct!(Token::Semicolon(b_pos!()));break;},
+                '(' => { test_construct!(Token::OpenParenthesis(b_pos!()));break;},
+                ')' => { test_construct!(Token::CloseParenthesis(b_pos!()));break;},
+                '{' => { test_construct!(Token::OpenCurly(b_pos!()));break;},
+                '}' => { test_construct!(Token::CloseCurly(b_pos!()));break;},
                 _ => {
                     self.codepoint_offset += 1;
                     self.cur_col += 1;
@@ -118,7 +135,7 @@ impl Iterator for Tokenizer {
             self.curr = test_multi_char_construct(multi_char_construct,self.codepoint_offset,self.cur_line,self.cur_col);
         }
 
-        if matches!(self.curr,Some(Token::EOF(..))) { // The traiéing whitespace problem
+        if matches!(self.curr,Some(Token::EOF(..))) { // The trailing whitespace problem
             return None;
         }
 

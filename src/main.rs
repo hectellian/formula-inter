@@ -22,10 +22,14 @@ fn main() {
         Ok(content) => {
             match lexical_analysis(content.clone()) {
                 Ok(_) => {
-                    if syntaxical_analysis(content.clone())  {
-                        if evaluation(content) {
-                            println!("Success!")
-                        }
+                    match syntaxical_analysis(content.clone())  {
+                        Ok(..) => {
+                            match evaluation(content) {
+                                Ok(..) => println!("Success!"),
+                                Err(e) => println!("{:?}",e)
+                            }
+                        },
+                        Err(e) => {println!("Syntaxical Error detected:\n");print!("{}",e)}
                     }
                 },
                 Err(es) => {println!("Lexical Error detected:\n");es.into_iter().for_each(|e| print!("{}",e))}

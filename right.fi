@@ -1,9 +1,12 @@
-i = 12+5*3;
-i=(1+(2*1))*(1+2);
-r = racine i;
+i= 1;
+j = 0;
 
-afficher i;
-aff_ral;
-
-afficher r;
+loop 3 {
+    loop i {
+        afficher j;
+        j = j+1;
+    }
+    i=1+i;
+}
+afficher j;
 aff_ral;

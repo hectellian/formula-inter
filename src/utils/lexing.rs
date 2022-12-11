@@ -23,24 +23,21 @@ impl LexicalError {
 }
 
 
-pub fn lexical_analysis(input: String) -> Result<bool,Vec<LexicalError>> {
-    let mut right = true;
+pub fn lexical_analysis(input: String) -> Result<(),Vec<LexicalError>> {
     let mut err_pile:Vec<LexicalError> = Vec::new();
-    for tok in Tokenizer::from(input.clone()) {
-        match tok {
-            Token::UnknownToken(s,e,l) => {
-                right = false;
-                match l {
-                    None => err_pile.push(LexicalError::from(input.get(s..e).unwrap().to_string(), (0,0),String::new())),
-                    Some(pos) => err_pile.push(LexicalError::from(input.get(s..e).unwrap().to_string(),pos, input.clone().lines().nth(pos.0).unwrap_or_default().to_string()))
-                }
-            },
-            _ => {}
+    Tokenizer::from(input.clone()).for_each(|t| 
+        if let Token::UnknownToken(s, e, p) = t {
+            if let Some(p) = p {
+                err_pile.push(LexicalError::from(input.get(s..e).unwrap_or_default().to_string(),p, input.lines().nth(p.0).unwrap_or_default().to_string()))
+            } else {
+                err_pile.push(LexicalError::from(input.get(s..e).unwrap_or_default().to_string(), (0,0),String::new()))
+            }
         }
+    );
+
+    if err_pile.is_empty() {
+        return Ok(());
     }
-    if right {
-        return Ok(right);
-    } else {
-        return Err(err_pile);
-    }
+
+    return Err(err_pile);
 }

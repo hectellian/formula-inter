@@ -19,6 +19,7 @@ enum SToken {
     EPS
 }
 
+#[derive(Debug)]
 enum SError {
     ESCRIPT,
     ELISTINSTR,
@@ -29,23 +30,50 @@ enum SError {
     ET,
     EG,
     EF,
+    ETERM(Token),
     Global
 }
 
 impl std::fmt::Display for SError {
     fn fmt(&self,f: &mut std::fmt::Formatter) -> std::fmt::Result{
         match *self {
-            SError::ESCRIPT => write!(f, "an identifier or aff_ral, Afficher keywords"),
-            SError::ELISTINSTR => write!(f, "an identifier or aff_ral, Afficher keywords"),
-            SError::EINSTR => write!(f, "an identifier or aff_ral, Afficher keywords"),
-            SError::EPDAFF => write!(f, "an identifier or inv keyword"),
-            SError::EE => write!(f, "an identier, a number or parenthesis"),
-            SError::ED => write!(f, "a plus or parenthesis"),
-            SError::ET => write!(f, "an identier, a number or parenthesis"),
-            SError::EG => write!(f, "a multiplication or an addition"),
-            SError::EF => write!(f, "an identier, a number or parenthesis"),
+            SError::ESCRIPT => write!(f, "an identifier or aff_ral, Afficher, loop keywords (ESCRIPT)"),
+            SError::ELISTINSTR => write!(f, "an identifier or aff_ral, Afficher, loop keywords (ELISTINSTR)"),
+            SError::EINSTR => write!(f, "an identifier or aff_ral, Afficher, loop keywords (EINSTR)"),
+            SError::EPDAFF => write!(f, "an identifier or inv, sqrt keyword (EPADFF)"),
+            SError::EE => write!(f, "an identier, a number or parenthesis (EE)"),
+            SError::ED => write!(f, "a plus or parenthesis (ED)"),
+            SError::ET => write!(f, "an identier, a number or parenthesis (ET)"),
+            SError::EG => write!(f, "a multiplication or an addition (EG)"),
+            SError::EF => write!(f, "an identier, a number or parenthesis (EF)"),
+            SError::ETERM(t) => write!(f,"{} (ETERM)",t),
             _ => write!(f,"Global error ocurred")
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct SyntaxicalError {
+    error_type: SError,
+    token_found: Option<String>,
+    error_position:(usize,usize),
+    line_of_error: String
+}
+
+impl SyntaxicalError {
+    fn from(error_type:SError,token_found:Option<String>,error_position:(usize,usize),line_of_error:String) -> SyntaxicalError {
+        SyntaxicalError { error_type, token_found, error_position, line_of_error}
+    }
+}
+
+impl std::fmt::Display for SyntaxicalError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let stok = match &self.token_found {
+            Some(s) => s.to_string(),
+            None => String::from("Nothing"),
+        };
+        let s = format!("{:3}| {}\n{:>space$}^ Found \x1b[93;31m{}\x1b[0m, {} were expected\n\n",self.error_position.0+1,self.line_of_error," ",stok,self.error_type,space=(self.error_position.1+5));
+        write!(f,"{}",s)
     }
 }
 
@@ -67,7 +95,7 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
     match sym {
         SToken::SCRIPT => {
             match sym_term {
-                Token::Identifier(..)|Token::AffRal(..)|Token::Afficher(..) => {
+                Token::Identifier(..)|Token::AffRal(..)|Token::Afficher(..)|Token::Loop(..) => {
                     return Ok(grule!(SToken::SCRIPT,[ SToken::LISTINSTR ]));
                 }
                 _ => return Err(SError::ESCRIPT)
@@ -75,8 +103,11 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
         },
         SToken::LISTINSTR => {
             match sym_term {
-                Token::Identifier(..)|Token::AffRal(..)|Token::Afficher(..) => {
+                Token::Identifier(..)|Token::AffRal(..)|Token::Afficher(..)|Token::Loop(..)=> {
                     return Ok(grule!(SToken::LISTINSTR,[SToken::INSTR,SToken::LISTINSTR]));
+                },
+                Token::CloseCurly(..) => {
+                    return Ok(grule!(SToken::LISTINSTR,[SToken::EPS]));
                 }
                 _ => return Err(SError::ELISTINSTR)
             }
@@ -91,6 +122,9 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
                 },
                 Token::Afficher(..) => {
                     return Ok(grule!(SToken::INSTR,[term!(Afficher),SToken::E,term!(Semicolon)]));
+                },
+                Token::Loop(..) => {
+                    return Ok(grule!(SToken::INSTR,[term!(Loop),SToken::E,term!(OpenCurly),SToken::LISTINSTR,term!(CloseCurly)]));
                 }
                 _ => return Err(SError::EINSTR)
             }
@@ -122,7 +156,7 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
                 Token::Adder(..) => {
                     return Ok(grule!(SToken::D,[term!(Adder),SToken::E]));
                 },
-                Token::CloseParenthesis(..)|Token::Semicolon(..) => {
+                Token::CloseParenthesis(..)|Token::Semicolon(..)|Token::OpenCurly(..) => {
                     return Ok(grule!(SToken::D,[SToken::EPS]));
                 },
                 _ => return Err(SError::ED)
@@ -141,7 +175,7 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
                 Token::Multiplier(..) => {
                     return Ok(grule!(SToken::G,[term!(Multiplier),SToken::T]));
                 },
-                Token::Adder(..)|Token::CloseParenthesis(..)|Token::Semicolon(..) => {
+                Token::Adder(..)|Token::CloseParenthesis(..)|Token::Semicolon(..)|Token::OpenCurly(..) => {
                     return  Ok(grule!(SToken::G,[SToken::EPS]));
                 },
                 _ => return Err(SError::EG)
@@ -168,57 +202,68 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
     }
 }
 
-macro_rules! error_print {
-    ($line:expr,$col:expr,$tok:expr,$func:expr) => {
-        println!("Syntax Error in line {} at col {}: found {} when expected {}",$line,$col,$tok,$func);   
-    };
-}
+pub fn syntaxical_analysis(input:String) -> Result<(),SyntaxicalError>{
 
-pub fn syntaxical_analysis(input:String) -> bool {
-
-    let tok_stream = Tokenizer::from(input.clone());
     let mut pile:Vec<SToken> = vec![SToken::SCRIPT];
 
-    for tok in tok_stream {
-        loop {
-            let sym = pile.pop();
+    for tok in Tokenizer::from(input.clone()) {
+        while let Some(sym) = pile.pop() {
             match sym {
-                None => {
-                    return false;
-                },
-                Some(sym) => {
-                    match sym {
-                        SToken::TERM(t) => {
-                            if discriminant(&t) == discriminant(&tok)  {
-                                break;
-                            } else {
-                                let p = tok.pos().unwrap();
-                                error_print!(p.0+1,p.1,tok,t);
-                                return false;
-                            }
-                        },
-                        SToken::EPS => {
-                            continue;
-                        },
-                        _ =>{
-                            let rule = table(sym, tok);
-                            match rule {
-                                Err(e) => {
-                                    let p = tok.pos().unwrap();
-                                    error_print!(p.0+1,p.1,tok,e);
-                                    return false
-                                },
-                                Ok(mut r) => {
-                                    r.1.reverse();
-                                    pile.append(&mut r.1);
-                                }
-                            }
-                        }   
+                SToken::TERM(t) => {
+                    if discriminant(&t) == discriminant(&tok) {
+                        break;
                     }
-                }
+
+                    let p = tok.pos().unwrap_or((0,0));
+                    let stok = match tok {
+                        Token::Identifier(s,e,..) => input.get(s..e).unwrap_or_default().to_string(),
+                        _ => format!("{}",tok)
+                    };
+                    return Err(SyntaxicalError::from(SError::ETERM(t), Some(stok), p, input.lines().nth(p.0).unwrap_or_default().to_string()));
+                },
+                SToken::EPS => {
+                    continue;
+                },
+                _ => {
+                    match table(sym, tok) {
+                        Err(e) => {
+                            let p = tok.pos().unwrap_or((0,0));
+                            let stok = match tok {
+                                Token::Identifier(s,e,..) => input.get(s..e).unwrap_or_default().to_string(),
+                                _ => format!("{}",tok)
+                            };
+                            return Err(SyntaxicalError::from(e, Some(stok), p, input.lines().nth(p.0).unwrap_or_default().to_string()));
+                        },
+                        Ok(mut r) => {
+                            r.1.reverse();
+                            pile.append(&mut r.1);
+                        }
+                    }
+                }   
             }
         }
     }
+    
+    let l = input.lines().count();
+    if let Some(err_line) = input.lines().last() {
 
-    true
+        macro_rules! err {
+            ($tok:ident) => {
+                Err(SyntaxicalError::from(SError::$tok, None, (l,err_line.len()), err_line.to_string()))
+            };
+        }
+
+        while let Some(st) = pile.pop() {
+            match st {
+                SToken::F => return err!(EF),
+                SToken::E => return err!(EE),
+                SToken::INSTR => return err!(EINSTR),
+                SToken::PDAFF => return err!(EPDAFF),
+                SToken::T => return err!(ET),
+                _ => {}
+            }
+        }
+    }
+    
+    Ok(())
 }
