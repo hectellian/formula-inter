@@ -9,7 +9,7 @@ fn test_simple_variable_syntax() {
     content.push_str("c = 3;");
     content.push_str("d = 4;");
 
-    assert_eq!(syntaxical_analysis(content), true);
+    assert!(matches!(syntaxical_analysis(content),Ok(..)));
 }
 
 #[test]
@@ -20,7 +20,7 @@ fn test_simple_variable_syntax_with_spaces() {
     content.push_str("c = 3; ");
     content.push_str("d = 4; ");
 
-    assert_eq!(syntaxical_analysis(content), true);
+    assert!(matches!(syntaxical_analysis(content),Ok(..)));
 }
 
 #[test]
@@ -31,7 +31,7 @@ fn test_simple_variable_syntax_with_tabs() {
     content.push_str("c = 3;    ");
     content.push_str("d = 4;    ");
 
-    assert_eq!(syntaxical_analysis(content), true);
+    assert!(matches!(syntaxical_analysis(content),Ok(..)));
 }
 
 #[test]
@@ -42,13 +42,13 @@ fn test_simple_variable_syntax_with_newlines() {
     content.push_str("c = 3;\n");
     content.push_str("d = 4;\n");
 
-    assert_eq!(syntaxical_analysis(content), true);
+    assert!(matches!(syntaxical_analysis(content),Ok(..)));
 }
 
 #[test]
 fn test_complex_structure() {
     let content: String = String::from("a=2;id=(a+3)*2;re=id+-20;aff_ral;afficher re;");
-    assert_eq!(syntaxical_analysis(content), true);
+    assert!(matches!(syntaxical_analysis(content),Ok(..)));
 }
 
 #[test]
@@ -60,7 +60,7 @@ fn test_syntaxical_error() {
     content.push_str("d = 4;\n");
     content.push_str("e = ;\n");
 
-    assert_eq!(syntaxical_analysis(content), false);
+    assert!(matches!(syntaxical_analysis(content),Err(..)));
 }
 
 #[test]
@@ -71,5 +71,5 @@ fn test_correct_syntax_wrong_semantics() {
     content.push_str("aff_ral;\n");
     content.push_str("afficher z;\n");
 
-    assert_eq!(syntaxical_analysis(content),true);
+    assert!(matches!(syntaxical_analysis(content),Ok(..)));
 }

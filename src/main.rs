@@ -20,10 +20,16 @@ fn main() {
     let contents = read_from(filename);
     match contents {
         Ok(content) => {
-            if lexical_anlysis(content.clone()) {
-                if syntaxical_analysis(content.clone())  {
-                    if evaluation(content) {
-                        println!("Success!")
+            match lexical_analysis(content.clone()) {
+                Ok(_) => {
+                    match syntaxical_analysis(content.clone())  {
+                        Ok(..) => {
+                            match evaluation(content) {
+                                Ok(..) => println!("Success!"),
+                                Err(e) => println!("{:?}",e)
+                            }
+                        },
+                        Err(e) => {println!("Syntaxical Error detected:\n");print!("{}",e)}
                     }
                 }
             }
