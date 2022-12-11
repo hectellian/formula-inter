@@ -26,15 +26,15 @@ fn mul(a:Token,b:Token)->Result<Token,RuntimeError>{
     match a {
         Token::Real(va, ..) => {
             match b {
-                Token::Real(vb,..) => return Ok(Token::Real(va*vb,0,0)),
-                Token::Integer(vb,..) => return Ok(Token::Real(vb as f64 * va,0,0)),
+                Token::Real(vb,..) => return Ok(Token::Real(va*vb,None)),
+                Token::Integer(vb,..) => return Ok(Token::Real(vb as f64 * va,None)),
                 _ => return Err(RuntimeError::IncorrectType)
             }
         }
         Token::Integer(va,..) => {
             match b {
-                Token::Real(vb,..) => return Ok(Token::Real(va as f64 * vb,0,0)),
-                Token::Integer(vb,..) => Ok(Token::Integer(va*vb,0,0)),
+                Token::Real(vb,..) => return Ok(Token::Real(va as f64 * vb,None)),
+                Token::Integer(vb,..) => Ok(Token::Integer(va*vb,None)),
                 _ => Err(RuntimeError::IncorrectType)
             }
         }
@@ -46,15 +46,15 @@ fn add(a:Token,b:Token)->Result<Token,RuntimeError>{
     match a {
         Token::Real(va, ..) => {
             match b {
-                Token::Real(vb,..) => return Ok(Token::Real(va+vb,0,0)),
-                Token::Integer(vb,..) => return Ok(Token::Real(vb as f64 + va,0,0)),
+                Token::Real(vb,..) => return Ok(Token::Real(va+vb,None)),
+                Token::Integer(vb,..) => return Ok(Token::Real(vb as f64 + va,None)),
                 _ => return Err(RuntimeError::IncorrectType)
             }
         }
         Token::Integer(va,..) => {
             match b {
-                Token::Real(vb,..) => return Ok(Token::Real(va as f64 + vb,0,0)),
-                Token::Integer(vb,..) => Ok(Token::Integer(va+vb,0,0)),
+                Token::Real(vb,..) => return Ok(Token::Real(va as f64 + vb,None)),
+                Token::Integer(vb,..) => Ok(Token::Integer(va+vb,None)),
                 _ => Err(RuntimeError::IncorrectType)
             }
         }
@@ -64,8 +64,8 @@ fn add(a:Token,b:Token)->Result<Token,RuntimeError>{
 
 fn inv(a:Token) -> Result<Token,RuntimeError>{
     match a {
-        Token::Real(va,..) => Ok(Token::Real(1.0/va, 0, 0)),
-        Token::Integer(va,..) => Ok(Token::Integer(1/va, 0, 0)),
+        Token::Real(va,..) => Ok(Token::Real(1.0/va,None)),
+        Token::Integer(va,..) => Ok(Token::Integer(1/va, None)),
 
         _ => return Err(RuntimeError::IncorrectType)
     }
@@ -73,8 +73,8 @@ fn inv(a:Token) -> Result<Token,RuntimeError>{
 
 fn sqrt(a:Token) -> Result<Token,RuntimeError>{
     match a {
-        Token::Real(va,..) => Ok(Token::Real(va.sqrt(), 0, 0)),
-        Token::Integer(va,..) => Ok(Token::Real((va as f64).sqrt(), 0, 0)),
+        Token::Real(va,..) => Ok(Token::Real(va.sqrt(),None)),
+        Token::Integer(va,..) => Ok(Token::Real((va as f64).sqrt(),None)),
 
         _ => return Err(RuntimeError::IncorrectType)
     }

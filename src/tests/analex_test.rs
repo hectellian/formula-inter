@@ -52,5 +52,5 @@ fn test_unkown_tokens() {
     tokens.push_str("!");
     tokens.push_str("?");
 
-    assert_eq!(lexical_anlysis(tokens), false);
+    assert!(matches!(lexical_analysis(tokens),Err(..)));
 }

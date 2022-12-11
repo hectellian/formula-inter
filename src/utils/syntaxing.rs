@@ -87,7 +87,7 @@ macro_rules! grule {
 
 macro_rules! term {
     ($tok:ident) => {
-        SToken::TERM(Token::$tok(0,0))
+        SToken::TERM(Token::$tok(None))
     };
 }
 
@@ -115,7 +115,7 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
         SToken::INSTR => {
             match sym_term {
                 Token::Identifier(..) => {
-                    return Ok(grule!(SToken::INSTR,[SToken::TERM(Token::Identifier(0,0,0,0)),term!(Equal),SToken::PDAFF,term!(Semicolon)]));
+                    return Ok(grule!(SToken::INSTR,[SToken::TERM(Token::Identifier(0,0,None)),term!(Equal),SToken::PDAFF,term!(Semicolon)]));
                 },
                 Token::AffRal(..) => {
                     return Ok(grule!(SToken::INSTR,[term!(AffRal),term!(Semicolon)]));
@@ -184,13 +184,13 @@ fn table(sym:SToken,sym_term:Token) -> Result<GRule,SError> {
         SToken::F => {
             match sym_term {
                 Token::Identifier(..) => {
-                    return Ok(grule!(SToken::F,[SToken::TERM(Token::Identifier(0,0,0,0))]));
+                    return Ok(grule!(SToken::F,[SToken::TERM(Token::Identifier(0,0,None))]));
                 },
                 Token::Real(..) => {
-                    return Ok(grule!(SToken::F,[SToken::TERM(Token::Real(0.0,0,0))]));
+                    return Ok(grule!(SToken::F,[SToken::TERM(Token::Real(0.0,None))]));
                 },
                 Token::Integer(..) => {
-                    return Ok(grule!(SToken::F,[SToken::TERM(Token::Integer(0,0,0))]));
+                    return Ok(grule!(SToken::F,[SToken::TERM(Token::Integer(0,None))]));
                 },
                 Token::OpenParenthesis(..) => {
                     return Ok(grule!(SToken::F,[term!(OpenParenthesis),SToken::E,term!(CloseParenthesis)]));
